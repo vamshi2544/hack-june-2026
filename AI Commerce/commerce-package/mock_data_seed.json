@@ -1,0 +1,157 @@
+{
+  "_meta": {
+    "project": "Beacon — Synchrony Acquisition Agent (agentic credit acquisition)",
+    "premise": "Synchrony exposes its credit-acquisition capability to the AI agent ecosystem: external shopping agent -> A2A -> SYF Acquisition Agent -> MCP tools -> SYF acquisition/credit APIs.",
+    "note": "ALL DATA FICTIONAL. No real customers, no real credit decisioning, no real PII or card numbers. Mock data + mock reasoning.",
+    "tagline": "From conversation to confidence — open the line, finance the buy, inside the agent."
+  },
+
+  "shopper": {
+    "session_token": "tok_shopper_8f21c4",
+    "display_name": "Shopper",
+    "has_synchrony_account": false,
+    "stated_intent": "I want this fridge but I'd rather finance it over time. I don't have a card with you yet.",
+    "budget_ceiling_usd": 1500,
+    "identity_mode": "tokenized_no_pii"
+  },
+
+  "cart": {
+    "primary_item": {
+      "sku": "FRG-4421",
+      "name": "CoolKeep 21 cu ft French-Door Refrigerator",
+      "price_usd": 1399.00,
+      "merchant": "HomeWorks (Synchrony Home partner)",
+      "merchant_id": "mrc_homeworks",
+      "merchant_is_synchrony_partner": true
+    },
+    "contrast_item": {
+      "sku": "FRG-9907",
+      "name": "Generic 18 cu ft Top-Freezer Refrigerator",
+      "price_usd": 720.00,
+      "merchant": "BargainBox (no Synchrony program)",
+      "merchant_id": "mrc_bargainbox",
+      "merchant_is_synchrony_partner": false
+    }
+  },
+
+  "a2a_request": {
+    "from_agent": "external-shopping-agent",
+    "to_agent": "synchrony-acquisition-agent",
+    "protocol": "A2A/acquisition-context-v1",
+    "payload": {
+      "shopper_token": "tok_shopper_8f21c4",
+      "merchant_id": "mrc_homeworks",
+      "cart_total_usd": 1399.00,
+      "new_account_ok": true,
+      "consent_scope": "soft_prequal_then_apply_on_consent"
+    }
+  },
+
+  "agent_role": {
+    "owns": [
+      "Suitability — is a new credit line the right path for this shopper/cart?",
+      "Soft-pull-before-hard-pull sequencing (no hard inquiry without consent)",
+      "Identity / KYC sequencing before any decision",
+      "Fair-lending-safe framing of the offer and any decline",
+      "When NOT to offer (non-partner merchant, or no suitable program)"
+    ],
+    "why_agent_not_just_mcp": "An external model cannot be trusted to make or frame a regulated credit decision. The decision and its compliance narrative must run on Synchrony's model. MCP exposes the typed tools; the Synchrony Acquisition Agent is the governed brain that calls them in the right order."
+  },
+
+  "mcp_tools": [
+    { "tool": "discover_offers",     "args": "merchant_id, cart_total", "returns": "applicable SYF programs/cards", "governed": true },
+    { "tool": "soft_prequal",        "args": "shopper_token, program_id", "returns": "soft pre-qual (NO hard pull)", "governed": true },
+    { "tool": "verify_identity",     "args": "shopper_token", "returns": "KYC/identity result (Prove InstantLink in prod)", "governed": true },
+    { "tool": "submit_application",  "args": "shopper_token, program_id, verified", "returns": "credit decision + assigned line", "governed": true },
+    { "tool": "authorize_financing", "args": "account_token, amount", "returns": "tokenized purchase authorization", "governed": true }
+  ],
+
+  "discover_offers_result": {
+    "selected_program_id": "prog_home_card",
+    "applicable": [
+      { "program_id": "prog_home_card", "name": "Synchrony Home Card", "promo": "0% APR for 18 months on $499+", "min_purchase_usd": 499, "term_months": 18, "applies": true,
+        "match_reason": "Merchant is a Synchrony Home partner; cart $1,399 >= $499 promo floor; new-account path available." },
+      { "program_id": "prog_carecredit", "name": "CareCredit", "applies": false, "match_reason": "Health/wellness vertical — not applicable to an appliance purchase." }
+    ]
+  },
+
+  "acquisition_funnel": [
+    { "step": "discover_offers",   "detail": "Matched Synchrony Home Card (0%/18mo). CareCredit excluded (wrong vertical)." },
+    { "step": "soft_prequal",      "detail": "Soft inquiry only -> pre-qualified up to $2,000. No hard pull yet." },
+    { "step": "consent_gate",      "detail": "HITL: shopper must consent before any application / hard pull.", "hitl": true },
+    { "step": "verify_identity",   "detail": "Identity verified via mobile link (Prove InstantLink pattern). KYC passed." },
+    { "step": "submit_application","detail": "Application submitted -> APPROVED. Credit line $2,000 assigned (new Synchrony account)." },
+    { "step": "authorize_financing","detail": "Tokenized authorization for $1,399 against the new line. Purchase completes in-conversation." }
+  ],
+
+  "prequal": {
+    "type": "soft_prequalification",
+    "hard_pull": false,
+    "approved_up_to_usd": 2000,
+    "selected_offer": {
+      "program": "Synchrony Home Card",
+      "promo": "0% APR for 18 months",
+      "purchase_usd": 1399.00,
+      "term_months": 18,
+      "monthly_usd": 77.72,
+      "plain_language": "Pre-qualified up to $2,000 (soft check only). On this $1,399 fridge: about $78/mo for 18 months, 0% if paid in term. Applying opens a new Synchrony Home account."
+    }
+  },
+
+  "consent_gate": {
+    "prompt": "Open a Synchrony Home account and finance this — $78/mo for 18 months, 0% if paid in term? (A full application & credit check happens only after you say yes.)",
+    "options": ["Yes, apply & finance", "See other options", "No thanks"],
+    "hitl": true
+  },
+
+  "decision": {
+    "result": "approved",
+    "account_token": "acct_new_3b71f9",
+    "credit_line_usd": 2000,
+    "new_account_opened": true,
+    "adverse_action": null
+  },
+
+  "tokenized_auth": {
+    "auth_token": "fin_auth_7c93a0e1",
+    "method": "tokenized_financing_authorization",
+    "status": "authorized",
+    "checkout_result": "Purchase completed in-conversation on the new Synchrony Home account."
+  },
+
+  "audit_log": [
+    { "step": "a2a_request_received", "detail": "Shopping agent -> Acquisition Agent, scope: soft_prequal_then_apply_on_consent" },
+    { "step": "discover_offers",      "detail": "Home Card selected (0%/18mo)" },
+    { "step": "soft_prequal",         "detail": "Soft inquiry only — no hard pull" },
+    { "step": "consent_captured",     "detail": "Shopper consented to apply + credit check" },
+    { "step": "verify_identity",      "detail": "KYC passed (mobile identity link)" },
+    { "step": "submit_application",   "detail": "Approved — $2,000 line, new account acct_new_3b71f9" },
+    { "step": "authorize_financing",  "detail": "fin_auth_7c93a0e1 issued (tokenized)" },
+    { "step": "checkout_completed",   "detail": "Purchase authorized on new Synchrony Home account" }
+  ],
+
+  "confidence_checks": [
+    { "label": "Soft pull before any application (no hard inquiry without consent)", "ok": true },
+    { "label": "Explicit consent before applying / credit check", "ok": true },
+    { "label": "Identity verified (KYC) before decision", "ok": true },
+    { "label": "Decision made on Synchrony's model, not the external agent", "ok": true },
+    { "label": "Tokenized authorization + full audit trail", "ok": true }
+  ],
+
+  "contrast_case": {
+    "trigger": "Shopper asks about the cheaper BargainBox fridge.",
+    "a2a_request": { "merchant_id": "mrc_bargainbox", "cart_total_usd": 720.00 },
+    "agent_decision": "decline",
+    "agent_message": "No Synchrony program applies at this merchant — I won't start an application or surface an offer here.",
+    "why_it_matters": "discover_offers returns nothing applicable -> the agent declines. Judgment, not always-yes."
+  },
+
+  "chat_script": [
+    { "side": "shopper", "text": "I want this fridge but I'd rather finance it over time. I don't have a card with you yet." },
+    { "side": "shopping_agent", "text": "The CoolKeep at HomeWorks is $1,399. Let me check Synchrony financing options for you…" },
+    { "side": "system", "text": "-> A2A handoff to Synchrony Acquisition Agent" },
+    { "side": "shopping_agent", "text": "You're pre-qualified up to $2,000 (soft check only). Best fit: Synchrony Home Card, 0% for 18 months, about $78/mo. Applying opens a new account." },
+    { "side": "shopper", "text": "Yes, apply & finance." },
+    { "side": "shopping_agent", "text": "Approved — $2,000 line opened, $1,399 financed at 0% for 18 months. Purchase complete; schedule emailed." }
+  ]
+}
