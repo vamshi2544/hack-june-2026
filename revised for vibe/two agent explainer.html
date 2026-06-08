@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReleasePilot + ReleaseWatch · The Idea, Explained</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --yellow:#FFCE32;--yellow-deep:#E0B520;--navy:#002856;--black:#0a0e14;
+  --panel:#131820;--panel2:#1a2230;--ink:#f0f2f5;--dim:#9da9b8;--faint:#6b7785;
+  --danger:#ff6b6b;--warning:#ffb454;--success:#7fd99b;--pilot:#5b8fc7;--watch:#FFCE32;
+  --border:#26303f;--real:#7fd99b;--seam:#ffb454;--human:#c89bff;
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--black);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;padding-bottom:60px}
+a{color:var(--yellow)}
+.head{padding:22px 26px 0;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,14,20,.95);backdrop-filter:blur(8px);z-index:20}
+.head h1{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.head h1 .p{color:var(--pilot)}.head h1 .w{color:var(--yellow)}
+.head .sub{color:var(--dim);font-size:12.5px;margin-top:4px}
+.tabs{display:flex;gap:4px;margin-top:16px;overflow-x:auto}
+.tab{font-size:12.5px;font-weight:600;padding:10px 15px;border-radius:8px 8px 0 0;border:1px solid transparent;color:var(--dim);cursor:pointer;white-space:nowrap;transition:.15s}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--ink);background:var(--panel);border-color:var(--border);border-bottom-color:var(--panel)}
+.tab .n{font-family:var(--mono);font-size:10px;color:var(--faint);margin-right:6px}
+.tab.on .n{color:var(--yellow)}
+.wrap{max-width:1100px;margin:0 auto;padding:26px 24px}
+.view{display:none;animation:fade .3s}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h2.title{font-size:22px;font-weight:800;margin-bottom:6px}
+.lead{color:var(--dim);font-size:14px;line-height:1.6;max-width:760px;margin-bottom:22px}
+.lead b{color:var(--ink)}
+
+/* generic cards */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+.card{border:1px solid var(--border);border-radius:12px;padding:18px;background:var(--panel)}
+.card.pilot{border-top:3px solid var(--pilot)}
+.card.watch{border-top:3px solid var(--watch)}
+.card h3{font-size:15px;margin-bottom:4px}
+.card .tagline{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+.card.pilot .tagline{color:var(--pilot)}.card.watch .tagline{color:var(--watch)}
+.card p{font-size:13px;color:var(--dim);line-height:1.55}
+.callout{border:1px solid var(--border);border-left:3px solid var(--yellow);border-radius:8px;padding:14px 16px;background:rgba(255,206,50,.04);font-size:13.5px;line-height:1.6;color:var(--ink);margin:16px 0}
+.callout b{color:var(--yellow)}
+.bignum{font-family:var(--mono);font-size:13px;color:var(--faint)}
+
+/* legend */
+.legend{display:flex;gap:18px;flex-wrap:wrap;border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--panel);margin-top:16px}
+.legend .k{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
+.chip{width:14px;height:14px;border-radius:4px;border:2px solid;flex-shrink:0}
+.chip.pilot{border-color:var(--pilot);background:rgba(91,143,199,.2)}
+.chip.watch{border-color:var(--watch);background:rgba(255,206,50,.2)}
+.chip.human{border-color:var(--human);background:rgba(200,155,255,.2)}
+.chip.real{border-color:var(--real);background:rgba(127,217,155,.15)}
+.chip.seam{border-color:var(--seam);background:rgba(255,180,84,.15)}
+
+/* flow timeline (Diagram 1) */
+.phase{display:flex;align-items:center;gap:10px;margin:20px 0 10px}
+.phase .pill{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+.phase.pre .pill{background:rgba(91,143,199,.16);color:var(--pilot);border:1px solid rgba(91,143,199,.5)}
+.phase.post .pill{background:rgba(255,206,50,.14);color:var(--watch);border:1px solid rgba(255,206,50,.5)}
+.phase .ln{flex:1;height:1px;background:var(--border)}
+.steps{display:flex;flex-direction:column;gap:8px;border-left:2px solid var(--border);margin-left:14px;padding-left:0}
+.step{position:relative;margin-left:22px;border:1px solid var(--border);border-radius:10px;padding:12px 15px;background:var(--panel);cursor:pointer;transition:.15s}
+.step:hover{background:var(--panel2)}
+.step::before{content:attr(data-n);position:absolute;left:-37px;top:12px;width:26px;height:26px;border-radius:50%;background:var(--panel2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.step.pre::before{border-color:var(--pilot);color:var(--pilot)}
+.step.post::before{border-color:var(--watch);color:var(--watch)}
+.step.gate::before{content:'\1F464';border-color:var(--human);background:rgba(200,155,255,.12)}
+.step.active{border-color:var(--yellow);box-shadow:0 0 0 1px var(--yellow)}
+.step .st{font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:9px}
+.step .who{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:4px;letter-spacing:.04em}
+.who.pilot{color:var(--pilot);border:1px solid rgba(91,143,199,.5)}
+.who.watch{color:var(--watch);border:1px solid rgba(255,206,50,.5)}
+.who.human{color:var(--human);border:1px solid rgba(200,155,255,.5)}
+.step .sd{font-size:12.5px;color:var(--dim);line-height:1.5;margin-top:0;max-height:0;overflow:hidden;transition:max-height .25s,margin-top .25s}
+.step.open .sd{max-height:200px;margin-top:8px}
+.handoff{display:flex;align-items:center;gap:12px;margin:14px 0 14px 14px;padding:12px 15px;border:1px dashed var(--yellow);border-radius:10px;background:rgba(255,206,50,.05)}
+.handoff .ic{font-size:18px}
+.handoff .ht{font-size:13px;color:var(--ink);line-height:1.5}
+.handoff .ht b{color:var(--yellow)}
+.playbar{display:flex;gap:10px;align-items:center;margin:14px 0}
+.btn{font-family:var(--mono);font-size:11px;letter-spacing:.04em;padding:9px 15px;border-radius:7px;border:1px solid var(--border);background:var(--panel);color:var(--ink);cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--yellow);color:var(--yellow)}
+.hint{font-size:11.5px;color:var(--faint)}
+
+/* architecture tiers (Diagrams 2 & 3) */
+.tier{margin:10px 0}
+.tier .lbl{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.tier .boxes{display:flex;gap:10px;flex-wrap:wrap}
+.box{flex:1;min-width:150px;border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:var(--panel);cursor:pointer;transition:.15s}
+.box:hover{background:var(--panel2);border-color:var(--dim)}
+.box.open{border-color:var(--yellow)}
+.box.agent{border-left:3px solid var(--pilot)}
+.box.agent.w{border-left-color:var(--watch)}
+.box.gw{border-left:3px solid var(--success)}
+.box.mem{border-left:3px solid var(--human)}
+.box.sys{border-left:3px solid var(--faint)}
+.box .bt{font-size:13px;font-weight:600}
+.box .bk{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+.box .bd{font-size:12px;color:var(--dim);line-height:1.5;max-height:0;overflow:hidden;transition:max-height .25s,margin-top .25s}
+.box.open .bd{max-height:240px;margin-top:9px}
+.arrow{text-align:center;color:var(--faint);font-size:15px;margin:3px 0}
+.platband{border:1px solid var(--border);border-radius:12px;padding:14px;margin:6px 0;background:linear-gradient(180deg,rgba(91,143,199,.05),rgba(255,206,50,.03))}
+.platband>.lbl{font-family:var(--mono);font-size:10px;color:var(--yellow);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+
+/* comparison rows (Diagram 4) */
+.cmphead{display:grid;grid-template-columns:1fr 48px 1fr;margin-bottom:6px}
+.cmphead div{padding:9px 14px;font-weight:700;font-size:12.5px}
+.cmphead .l{background:#0e1626;border:1px solid var(--border);border-radius:8px 8px 0 0;border-bottom:none}
+.cmphead .l span,.cmphead .r span{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.cmphead .l span{color:var(--pilot)}
+.cmphead .r{background:#14110a;border:1px solid var(--border);border-radius:8px 8px 0 0;border-bottom:none;text-align:right}
+.cmphead .r span{color:var(--yellow)}
+.crow{display:grid;grid-template-columns:1fr 48px 1fr;margin-bottom:6px;cursor:pointer}
+.crow .cc{border:1px solid var(--border);padding:11px 14px;background:var(--panel);transition:.15s}
+.crow .cc.l{border-radius:8px 0 0 8px;border-right:none}
+.crow .cc.r{border-radius:0 8px 8px 0;border-left:none;text-align:right}
+.crow[data-c="real"] .cc{border-color:rgba(127,217,155,.4)}
+.crow[data-c="seam"] .cc{border-color:rgba(255,180,84,.4)}
+.crow .cc .ct{font-size:12.5px;font-weight:600}
+.crow .cc .ck{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:3px}
+.crow .mid{display:flex;align-items:center;justify-content:center}
+.crow .mid .b{font-family:var(--mono);font-size:8px;padding:2px 5px;border-radius:4px}
+.crow[data-c="real"] .mid .b{color:var(--real);border:1px solid rgba(127,217,155,.5)}
+.crow[data-c="seam"] .mid .b{color:var(--seam);border:1px solid rgba(255,180,84,.5)}
+.crow:hover .cc{background:var(--panel2)}
+.crow.open .cc{background:var(--panel2);border-color:var(--yellow)}
+.cdetail{grid-column:1/-1;border:1px solid var(--yellow);border-radius:8px;margin:1px 0 8px;max-height:0;overflow:hidden;transition:max-height .25s;background:#0c1118}
+.crow.open + .cdetail{max-height:160px}
+.cdetail .ci{padding:12px 15px;font-size:12.5px;color:var(--dim);line-height:1.55}
+.cdetail .ci b{color:var(--ink)}
+
+/* glossary */
+.gloss{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.term{border:1px solid var(--border);border-radius:10px;padding:13px 15px;background:var(--panel)}
+.term .tt{font-size:13px;font-weight:700;color:var(--yellow)}
+.term .td{font-size:12.5px;color:var(--dim);line-height:1.5;margin-top:5px}
+@media(max-width:780px){.cards,.gloss{grid-template-columns:1fr}.cmphead,.crow{grid-template-columns:1fr 26px 1fr}.crow .mid .b{display:none}}
+</style>
+</head>
+<body>
+<div class="head">
+  <h1><span class="p">ReleasePilot</span> + <span class="w">ReleaseWatch</span> &mdash; The Idea, Explained</h1>
+  <div class="sub">Two AI agents for the release lifecycle. Read the tabs left&rarr;right; each one goes a little deeper. From comment to confidence.</div>
+  <div class="tabs" id="tabs">
+    <div class="tab on" data-v="start"><span class="n">00</span>Start here</div>
+    <div class="tab" data-v="idea"><span class="n">01</span>The idea (end-to-end)</div>
+    <div class="tab" data-v="prod"><span class="n">02</span>In production</div>
+    <div class="tab" data-v="mock"><span class="n">03</span>Our mock</div>
+    <div class="tab" data-v="cmp"><span class="n">04</span>Production vs mock</div>
+    <div class="tab" data-v="gloss"><span class="n">05</span>Glossary</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ============ START HERE ============ -->
+<section class="view on" data-v="start">
+  <h2 class="title">What problem are we solving?</h2>
+  <p class="lead">A team ships a release. The health checks go green. But something downstream quietly broke &mdash; and nobody notices for hours. Then it&rsquo;s a war room: digging through logs, asking &ldquo;did we change anything?&rdquo;, trying to remember if we&rsquo;ve seen this before. The release was risky in ways no one flagged up front, and the failure was slow to explain.</p>
+
+  <div class="callout"><b>The idea in one line:</b> two AI teammates for the release lifecycle &mdash; one checks the risk <b>before</b> you ship, one watches <b>after</b> you ship and explains failures in minutes instead of hours.</div>
+
+  <div class="cards">
+    <div class="card pilot">
+      <h3>ReleasePilot</h3>
+      <div class="tagline">before deploy &middot; predict</div>
+      <p>When you&rsquo;re about to ship, it gathers the history and the change, scores how risky this release is, and drafts the release page &mdash; so the team approves with eyes open, not blind.</p>
+    </div>
+    <div class="card watch">
+      <h3>ReleaseWatch</h3>
+      <div class="tagline">after deploy &middot; detect &amp; explain</div>
+      <p>After you ship, it watches the right signals, catches the drift that health checks miss, and when something breaks it assembles the evidence into a root-cause analysis &mdash; with a confidence score &mdash; and raises the incident.</p>
+    </div>
+  </div>
+
+  <h2 class="title" style="font-size:17px;margin-top:24px">Why two agents and not one?</h2>
+  <p class="lead">Different jobs (predict vs. detect), different moments (before vs. after deploy), and &mdash; the key insight &mdash; a clean <b>handoff</b> between them. ReleasePilot doesn&rsquo;t just disappear at deploy; it hands ReleaseWatch a <b>risk packet</b>: &ldquo;here&rsquo;s what I expect, here&rsquo;s what to watch, here are the thresholds.&rdquo; That&rsquo;s why ReleaseWatch can tell a real problem from normal noise &mdash; it was briefed.</p>
+
+  <div class="legend">
+    <div class="k"><span class="chip pilot"></span> ReleasePilot (pre-deploy)</div>
+    <div class="k"><span class="chip watch"></span> ReleaseWatch (post-deploy)</div>
+    <div class="k"><span class="chip human"></span> Human approval (we stay in control)</div>
+    <div class="k"><span class="chip real"></span> Real working code</div>
+    <div class="k"><span class="chip seam"></span> Mocked for the demo</div>
+  </div>
+  <p class="hint" style="margin-top:12px">New here? The <b>Glossary</b> tab defines every term (agent, A2A, MCP, RCA, L1/L2/L3&hellip;).</p>
+</section>
+
+<!-- ============ DIAGRAM 1 · THE IDEA ============ -->
+<section class="view" data-v="idea">
+  <h2 class="title">The end-to-end workflow</h2>
+  <p class="lead">What actually happens, start to finish &mdash; the same story whether it runs on a platform or in our demo. Click any step to expand it, or press play to walk through. <b>Three points need a human</b> (the purple person icons).</p>
+  <div class="playbar"><button class="btn" id="play">&#9654; Play walkthrough</button><span class="hint">highlights each step in order</span></div>
+
+  <div class="phase pre"><span class="pill">Pre-release &middot; ReleasePilot</span><span class="ln"></span></div>
+  <div class="steps" id="preSteps">
+    <div class="step pre" data-n="1"><div class="st">Developer flags a release <span class="who pilot">PILOT</span></div><div class="sd">When the work is ready to ship, the developer drops a comment on the release story (e.g. &ldquo;@release-pilot, this is ready&rdquo;). That&rsquo;s the trigger &mdash; no new tool to learn.</div></div>
+    <div class="step pre" data-n="2"><div class="st">Gathers the context <span class="who pilot">PILOT</span></div><div class="sd">Pulls the change details, the services touched, past incidents on those services, and the standard release runbook. It&rsquo;s reading the same places a senior engineer would &mdash; just instantly.</div></div>
+    <div class="step pre" data-n="3"><div class="st">Scores the risk <span class="who pilot">PILOT</span></div><div class="sd">Weighs the change and the history into a 0&ndash;100 risk score with plain reasons &mdash; e.g. <b>72 / Elevated</b> because it touches messaging, needs a database migration, and matches a past incident. The score is computed, not guessed.</div></div>
+    <div class="step pre" data-n="4"><div class="st">Drafts the release page <span class="who pilot">PILOT</span></div><div class="sd">Fills the standard release runbook: the risk and why, the code diff, the checklist, links to past incidents. A blank page becomes a complete, reviewable release record.</div></div>
+    <div class="step pre gate" data-n="5"><div class="st">Human reviews &amp; approves <span class="who human">GATE 1</span></div><div class="sd">A person reads the curated page and approves (or sends it back). The agent did the legwork; the human makes the call.</div></div>
+    <div class="step pre gate" data-n="6"><div class="st">Human approves the deploy <span class="who human">GATE 2</span></div><div class="sd">The change ticket advances toward Implement; a person approves the actual go. Then the release deploys.</div></div>
+  </div>
+
+  <div class="handoff"><span class="ic">&#129309;</span><div class="ht"><b>The handoff (A2A).</b> ReleasePilot passes ReleaseWatch a <b>risk packet</b> &mdash; what it expects, what to watch, and the thresholds. This is why the watcher knows a real problem from normal noise.</div></div>
+
+  <div class="phase post"><span class="pill">Post-release &middot; ReleaseWatch</span><span class="ln"></span></div>
+  <div class="steps" id="postSteps">
+    <div class="step post" data-n="7"><div class="st">Watches quietly &mdash; all clear (L1) <span class="who watch">WATCH</span></div><div class="sd">Hourly checks. Health looks green. Everything within the thresholds the risk packet set. Nothing to say yet.</div></div>
+    <div class="step post" data-n="8"><div class="st">Spots unexplained drift (L2 &middot; amber) <span class="who watch">WATCH</span></div><div class="sd">A metric moves in a way the risk packet did <b>not</b> predict. The agent flags it, posts to the team channel, and tightens its watch cadence. This is the catch that simple health checks miss.</div></div>
+    <div class="step post" data-n="9"><div class="st">Escalates &amp; explains (L3 &middot; red) <span class="who watch">WATCH</span></div><div class="sd">It assembles the evidence &mdash; logs, metrics, the code diff, matching past incidents &mdash; into a <b>root-cause analysis with a confidence score (e.g. 0.84)</b>, and opens an incident. Minutes, not a multi-hour war room.</div></div>
+    <div class="step post gate" data-n="10"><div class="st">Human acknowledges <span class="who human">GATE 3</span></div><div class="sd">On-call confirms the finding and applies the fix. The incident stays accountable to a person.</div></div>
+    <div class="step post" data-n="11"><div class="st">Recovery <span class="who watch">WATCH</span></div><div class="sd">The fix lands, metrics return to baseline, the watch relaxes. Loop closed.</div></div>
+  </div>
+
+  <div class="callout" style="margin-top:20px"><b>The example we demo:</b> a routing change needs a small database migration. It ran in the test environment (so tests passed) but <b>not</b> in the deploy environment. After deploy, health checks are green &mdash; but the publisher can&rsquo;t start against the missing table and <b>silently stops publishing</b>. Three downstream consumers go to zero at the exact deploy minute. ReleaseWatch ties the silence to the deploy and a matching past incident at <b>0.84</b> confidence &mdash; the kind of thing that normally eats an afternoon.</div>
+</section>
+
+<!-- ============ DIAGRAM 2 · IN PRODUCTION ============ -->
+<section class="view" data-v="prod">
+  <h2 class="title">How it runs in production &mdash; on the Agentic AI Platform</h2>
+  <p class="lead">The same workflow, mapped onto the enterprise <b>Agentic AI Platform</b>. The two agents run as managed processes; they <b>reason</b> through a governed LLM gateway and <b>act</b> on systems through a governed tool gateway; the handoff lives in shared agent memory; humans approve at the gates. Click a component to see its job.</p>
+
+  <div class="tier"><div class="lbl">Where people interact</div><div class="boxes">
+    <div class="box sys"><div class="bt">Release story &amp; team channel</div><div class="bk">Jira comment · chat approvals</div><div class="bd">The developer triggers ReleasePilot with a comment; the team approves at the gates in their normal channel. No new surface to adopt.</div></div>
+  </div></div>
+  <div class="arrow">&#9660;</div>
+
+  <div class="platband"><div class="lbl">Agentic AI Platform</div>
+    <div class="tier"><div class="lbl">The agents (managed runtime)</div><div class="boxes">
+      <div class="box agent"><div class="bt">ReleasePilot</div><div class="bk">agent runtime</div><div class="bd">Runs steps 1&ndash;6: gather, score, draft, route for approval. A managed agent process &mdash; no server to babysit.</div></div>
+      <div class="box agent w"><div class="bt">ReleaseWatch</div><div class="bk">agent runtime</div><div class="bd">Runs steps 7&ndash;11: watch, detect drift, escalate, produce the RCA, raise the incident.</div></div>
+    </div></div>
+    <div class="tier"><div class="lbl">Shared capabilities</div><div class="boxes">
+      <div class="box gw"><div class="bt">LLM Gateway &rarr; approved model</div><div class="bk">the reasoning</div><div class="bd">Both agents think through a governed gateway to an approved LLM &mdash; no personal keys, fully sanctioned. This does the judgment: the risk narrative and the root-cause analysis.</div></div>
+      <div class="box gw"><div class="bt">MCP Gateway</div><div class="bk">the hands</div><div class="bd">Governed, typed access to enterprise systems. Every read (Jira, incidents, logs) and write (release page, incident) goes through here.</div></div>
+      <div class="box mem"><div class="bt">Agent Memory</div><div class="bk">the handoff</div><div class="bd">Stores the risk packet ReleasePilot produced so ReleaseWatch can read it after deploy. This is the A2A handoff, persisted.</div></div>
+      <div class="box mem"><div class="bt">Human-in-the-loop gates</div><div class="bk">control</div><div class="bd">The platform&rsquo;s approval primitive backs the 3 gates &mdash; review, deploy, acknowledge.</div></div>
+    </div></div>
+  </div>
+  <div class="arrow">&#9660;</div>
+
+  <div class="tier"><div class="lbl">Enterprise systems (reached only through the MCP Gateway)</div><div class="boxes">
+    <div class="box sys"><div class="bt">Jira / ServiceNow</div><div class="bk">stories · incidents · changes</div><div class="bd">Where the release story, past incidents, and the change ticket live.</div></div>
+    <div class="box sys"><div class="bt">Confluence / SharePoint</div><div class="bk">runbooks · the release page</div><div class="bd">The standard release template the page is built from, and where the finished page is written.</div></div>
+    <div class="box sys"><div class="bt">Bitbucket</div><div class="bk">the code diff</div><div class="bd">What actually changed in this release &mdash; evidence for both the risk score and the RCA.</div></div>
+    <div class="box sys"><div class="bt">Splunk / New Relic</div><div class="bk">logs · metrics</div><div class="bd">The telemetry ReleaseWatch reads to detect drift and build the root-cause analysis.</div></div>
+  </div></div>
+
+  <div class="callout" style="margin-top:18px"><b>Read it as a flow:</b> comment &rarr; ReleasePilot (MCP pulls Jira/incidents/runbook &middot; LLM Gateway reasons &middot; writes the risk packet to Memory &middot; humans approve) &rarr; deploy &rarr; ReleaseWatch (reads the risk packet from Memory &middot; MCP pulls logs/metrics &middot; LLM Gateway does the RCA &middot; human acknowledges).</div>
+</section>
+
+<!-- ============ DIAGRAM 3 · OUR MOCK ============ -->
+<section class="view" data-v="mock">
+  <h2 class="title">How we build it for the hackathon &mdash; the vibe-coded mock</h2>
+  <p class="lead">We don&rsquo;t have the platform, live systems, or an LLM reachable on a locked-down laptop in 24 hours. So we <b>vibe-code a faithful working replica</b>: one app (built with GitHub Copilot) that runs the <b>same two agents as real orchestration code</b>, with mocked data and mocked reasoning. Same shapes as production &mdash; click a component to see what it stands in for.</p>
+
+  <div class="tier"><div class="lbl">What the audience sees</div><div class="boxes">
+    <div class="box sys"><div class="bt">5 UI surfaces</div><div class="bk">Jira · Confluence · ServiceNow · Teams · Dashboard</div><div class="bd">Mocked panes that look like the real tools, so the demo reads like the real workflow. The blank-&rarr;filled release page and the live dashboard tiles happen here.</div></div>
+  </div></div>
+  <div class="arrow">&#9660;</div>
+
+  <div class="platband"><div class="lbl">One React / TypeScript app (Copilot-built)</div>
+    <div class="tier"><div class="lbl">The agents = real orchestration code</div><div class="boxes">
+      <div class="box agent"><div class="bt">runReleasePilot()</div><div class="bk">orchestrator function</div><div class="bd">Real code that runs steps 1&ndash;6 in order, exactly like the production agent &mdash; just in the browser instead of the runtime.</div></div>
+      <div class="box agent w"><div class="bt">runReleaseWatch()</div><div class="bk">orchestrator function</div><div class="bd">Real code that runs the watch&rarr;detect&rarr;escalate&rarr;RCA sequence.</div></div>
+    </div></div>
+    <div class="tier"><div class="lbl">Real logic / mocked edges</div><div class="boxes">
+      <div class="box gw"><div class="bt">computeRiskScore() &amp; detectDrift()</div><div class="bk">REAL functions</div><div class="bd">Genuinely compute the 72/28 score and genuinely classify drift &mdash; not painted in. This is the credibility core.</div></div>
+      <div class="box seam" style="border-left:3px solid var(--seam)"><div class="bt">generateRCA()</div><div class="bk">mocked reasoning</div><div class="bd">Returns a pre-written analysis instead of calling an LLM &mdash; the one clearly-faked step, behind a one-line seam.</div></div>
+      <div class="box seam" style="border-left:3px solid var(--seam)"><div class="bt">seed.json</div><div class="bk">stands in for all systems</div><div class="bd">One JSON file shaped like the real API responses replaces Jira, ServiceNow, Confluence, Bitbucket, Splunk, New Relic.</div></div>
+      <div class="box mem"><div class="bt">App state (the risk packet)</div><div class="bk">the handoff</div><div class="bd">The risk packet lives in app state and is re-read by runReleaseWatch() &mdash; our stand-in for Agent Memory.</div></div>
+      <div class="box mem"><div class="bt">3 real buttons</div><div class="bk">the gates</div><div class="bd">The approval gates are genuine clicks that advance real state &mdash; not scripted scene jumps.</div></div>
+    </div></div>
+  </div>
+
+  <div class="callout" style="margin-top:18px"><b>The honest framing:</b> mock <i>data</i>, not a mock <i>app</i>. The orchestration, the risk engine, the drift detector, and the approval flow are real code running live. Only the inputs (seed JSON) and one reasoning step (the RCA) are faked &mdash; each a one-line swap to the platform.</div>
+</section>
+
+<!-- ============ DIAGRAM 4 · PRODUCTION vs MOCK ============ -->
+<section class="view" data-v="cmp">
+  <h2 class="title">Production vs mock &mdash; what&rsquo;s real, what&rsquo;s a seam</h2>
+  <p class="lead">Each capability sits across from its counterpart. <b style="color:var(--real)">Green</b> = real code that runs in both. <b style="color:var(--seam)">Amber</b> = a seam: mocked in the demo, a one-line swap in production. Click a row for the swap.</p>
+
+  <div class="cmphead"><div class="l">Production<span>Agentic AI Platform</span></div><div></div><div class="r">Our mock<span>vibe-coded app</span></div></div>
+  <div id="cmpRows"></div>
+
+  <div class="callout" style="margin-top:16px"><b>The one-liner when someone asks &ldquo;what&rsquo;s actually real?&rdquo;</b> The orchestration, the risk engine, the drift detector, and the three approval clicks run for real. The amber seams &mdash; data in, writes out, and the RCA reasoning &mdash; are one-line swaps to the gateways. Same machinery; we mock the edges.</div>
+</section>
+
+<!-- ============ GLOSSARY ============ -->
+<section class="view" data-v="gloss">
+  <h2 class="title">Glossary &mdash; every term, in plain language</h2>
+  <p class="lead">For anyone new to the concept. No prior knowledge assumed.</p>
+  <div class="gloss">
+    <div class="term"><div class="tt">Agent</div><div class="td">A program that can take a goal, decide the steps, use tools, and act &mdash; not just answer a question. Here: ReleasePilot and ReleaseWatch.</div></div>
+    <div class="term"><div class="tt">A2A (agent-to-agent) handoff</div><div class="td">One agent passing work and context to another. ReleasePilot hands ReleaseWatch the <i>risk packet</i> at deploy.</div></div>
+    <div class="term"><div class="tt">Risk packet</div><div class="td">The briefing ReleasePilot creates: the risk score, what it expects, what to watch, and the thresholds. It&rsquo;s what makes ReleaseWatch smart instead of noisy.</div></div>
+    <div class="term"><div class="tt">MCP Gateway</div><div class="td">A governed doorway for an agent to read from and write to real systems (Jira, Splunk, etc.) through typed, sanctioned tools &mdash; instead of ad-hoc API keys.</div></div>
+    <div class="term"><div class="tt">LLM Gateway</div><div class="td">A governed doorway to an approved large language model. It&rsquo;s where the agents do their <i>reasoning</i> &mdash; the risk narrative and the root-cause analysis.</div></div>
+    <div class="term"><div class="tt">HITL (human-in-the-loop)</div><div class="td">Points where a person must approve before the agent proceeds. We have three: review, deploy, acknowledge.</div></div>
+    <div class="term"><div class="tt">Drift</div><div class="td">When a live metric moves away from what was expected. <i>Unexplained</i> drift &mdash; not predicted by the risk packet &mdash; is the warning sign.</div></div>
+    <div class="term"><div class="tt">RCA (root-cause analysis)</div><div class="td">The explanation of <i>why</i> something broke, backed by evidence (logs, metrics, the diff, past incidents) and a confidence score.</div></div>
+    <div class="term"><div class="tt">L1 / L2 / L3</div><div class="td">Escalation levels. L1 = hourly all-clear. L2 = amber, unexplained drift, faster cadence + alert. L3 = red, confirmed problem, RCA + incident.</div></div>
+    <div class="term"><div class="tt">Vibe coding</div><div class="td">Building software by directing an AI coding assistant (here, GitHub Copilot) conversationally &mdash; the theme of the hackathon.</div></div>
+    <div class="term"><div class="tt">Seam</div><div class="td">A marked spot in the code where the demo fakes something (data or reasoning) that production does for real &mdash; written so it&rsquo;s a one-line swap.</div></div>
+    <div class="term"><div class="tt">Agentic AI Platform</div><div class="td">The enterprise platform that hosts agents, governs their reasoning (LLM Gateway) and their actions (MCP Gateway), stores their memory, and enforces human approvals.</div></div>
+  </div>
+</section>
+
+</div>
+
+<script>
+// tabs
+const tabs=document.getElementById('tabs');
+tabs.addEventListener('click',e=>{
+  const t=e.target.closest('.tab'); if(!t)return;
+  const v=t.dataset.v;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));
+  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.dataset.v===v));
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+// click-to-expand for steps and boxes
+document.querySelectorAll('.step,.box').forEach(el=>{
+  el.addEventListener('click',()=>el.classList.toggle('open'));
+});
+
+// play walkthrough on Diagram 1
+const play=document.getElementById('play');
+let playing=false;
+play.addEventListener('click',()=>{
+  if(playing)return; playing=true;
+  const steps=[...document.querySelectorAll('#preSteps .step, #postSteps .step')];
+  steps.forEach(s=>{s.classList.remove('active');s.classList.remove('open');});
+  let i=0;
+  const tick=()=>{
+    if(i>0)steps[i-1].classList.remove('active');
+    if(i>=steps.length){playing=false;play.innerHTML='&#9654; Play walkthrough';return;}
+    steps[i].classList.add('active');steps[i].classList.add('open');
+    steps[i].scrollIntoView({behavior:'smooth',block:'center'});
+    i++;setTimeout(tick,1400);
+  };
+  play.innerHTML='&#9209; Playing&hellip;';tick();
+});
+
+// comparison rows (Diagram 4)
+const cmp=[
+ {c:'seam',l:'MCP Gateway pulls Jira / ServiceNow / SharePoint',r:'gatherFrom*() read seed.json',b:'data in',d:'The extraction &amp; filtering logic is <b>real</b>; only the data <b>source</b> is mocked. One-line swap to the MCP Gateway.'},
+ {c:'real',l:'computeRiskScore() on the runtime',r:'computeRiskScore() in the app',b:'same',d:'<b>The exact same function</b> in both &mdash; produces 72 / 28. Computed, not painted.'},
+ {c:'seam',l:'LLM Gateway writes the risk narrative',r:'deterministic compose from seed',b:'LLM',d:'The structured risk packet is real; only the narrative <b>wording</b> is mocked.'},
+ {c:'real',l:'fillTemplate() &rarr; release page',r:'fillTemplate() &rarr; React render',b:'real',d:'The template-fill logic is <b>real</b> in both; only the <b>write target</b> (Confluence vs the UI) differs.'},
+ {c:'real',l:'HITL gates (review &middot; deploy)',r:'two real buttons',b:'real click',d:'<b>Real human clicks in both.</b> Genuine handlers that advance real state.'},
+ {c:'seam',l:'Agent Memory holds the risk packet',r:'app state holds the risk packet',b:'handoff',d:'The handoff is real (the packet is passed and re-read); only the <b>persistence</b> is in-memory.'},
+ {c:'seam',l:'MCP Gateway pulls Splunk / New Relic',r:'pullSplunkLogs() streams seed',b:'data in',d:'The agent really reads &amp; streams the logs; the <b>source</b> is seed data shaped like Splunk output.'},
+ {c:'real',l:'detectDrift() vs thresholds',r:'detectDrift() &mdash; identical',b:'same',d:'<b>The exact same function</b> &mdash; classifies L1 / L2 / L3. Detected, not hardcoded.'},
+ {c:'seam',l:'LLM Gateway produces the RCA',r:'generateRCA() returns seed (0.84)',b:'LLM',d:'<b>The one clearly-faked reasoning step.</b> The evidence assembly around it is real; the analysis is deterministic in the demo.'},
+ {c:'real',l:'HITL gate (acknowledge)',r:'real Acknowledge button',b:'real click',d:'<b>Real click in both</b> &mdash; drives the recovery phase.'}
+];
+let h='';
+cmp.forEach(r=>{
+  h+='<div class="crow" data-c="'+r.c+'">'
+   +'<div class="cc l"><div class="ct">'+r.l+'</div></div>'
+   +'<div class="mid"><span class="b">'+r.b+'</span></div>'
+   +'<div class="cc r"><div class="ct">'+r.r+'</div></div></div>'
+   +'<div class="cdetail"><div class="ci">'+r.d+'</div></div>';
+});
+document.getElementById('cmpRows').innerHTML=h;
+document.querySelectorAll('.crow').forEach(row=>{
+  row.addEventListener('click',()=>{
+    const open=row.classList.contains('open');
+    document.querySelectorAll('.crow.open').forEach(r=>r.classList.remove('open'));
+    if(!open)row.classList.add('open');
+  });
+});
+</script>
+</body>
+</html>
