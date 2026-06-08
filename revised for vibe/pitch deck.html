@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Pulse · ReleasePilot + ReleaseWatch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --yellow:#FFCE32;--yellow-deep:#E0B520;--navy:#002856;--black:#070a0f;
+  --panel:#10151d;--panel2:#171e29;--ink:#f4f6f8;--dim:#9aa6b6;--faint:#5f6b7a;
+  --danger:#ff6b6b;--warning:#ffb454;--success:#7fd99b;--pilot:#6ea2d8;--watch:#FFCE32;
+  --human:#c89bff;--border:#222c3a;--real:#7fd99b;--seam:#ffb454;
+  --disp:'Bricolage Grotesque',sans-serif;--body:'Hanken Grotesk',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#04060a;color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;overflow:hidden}
+.stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+.deck{position:relative;width:min(96vw,1280px);height:min(96vh,720px);aspect-ratio:16/9;
+  background:
+    radial-gradient(1200px 600px at 78% -10%, rgba(255,206,50,.06), transparent 60%),
+    radial-gradient(900px 700px at 0% 110%, rgba(0,40,86,.5), transparent 55%),
+    linear-gradient(180deg,#0a0e15,#070a0f);
+  border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.6)}
+.deck::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.035;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.slide{position:absolute;inset:0;padding:60px 70px;display:flex;flex-direction:column;justify-content:center;
+  opacity:0;visibility:hidden;transform:scale(1.012);transition:opacity .5s ease,transform .5s ease,visibility .5s}
+.slide.active{opacity:1;visibility:visible;transform:none}
+.r{opacity:0;transform:translateY(16px);transition:opacity .6s cubic-bezier(.2,.7,.2,1),transform .6s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
+.slide.active .r{opacity:1;transform:none}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--yellow);margin-bottom:18px}
+h1{font-family:var(--disp);font-weight:800;font-size:clamp(40px,7.2vw,104px);line-height:.94;letter-spacing:-.02em}
+h2{font-family:var(--disp);font-weight:700;font-size:clamp(26px,3.9vw,48px);line-height:1.05;letter-spacing:-.015em}
+p.lead{font-size:clamp(14px,1.45vw,19px);color:var(--dim);line-height:1.5;max-width:780px;margin-top:16px}
+.kick{font-family:var(--mono);font-size:13px;color:var(--faint);margin-top:22px;letter-spacing:.02em;line-height:1.5}
+.kick b{color:var(--ink);font-weight:500}
+em{font-style:normal;color:var(--yellow)}
+strong{color:var(--ink);font-weight:600}
+.pulse{width:100%;height:auto;display:block;overflow:visible}
+.pulse path{fill:none;stroke:var(--yellow);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2600;stroke-dashoffset:2600;filter:drop-shadow(0 0 8px rgba(255,206,50,.45))}
+.slide.active .pulse path{animation:draw 2.2s cubic-bezier(.5,0,.1,1) forwards .35s}
+.pulse.flat path{stroke:var(--danger);filter:drop-shadow(0 0 8px rgba(255,107,107,.4))}
+@keyframes draw{to{stroke-dashoffset:0}}
+.s-title{align-items:flex-start}
+.titlewrap{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+.titlewrap .tag{font-family:var(--disp);font-weight:600;font-size:clamp(16px,2vw,26px);color:var(--ink);opacity:.85}
+.pulseband{margin:28px 0 30px;width:min(640px,70%)}
+.team{display:flex;align-items:center;font-family:var(--mono);font-size:14px;color:var(--dim);letter-spacing:.04em;flex-wrap:wrap;margin-top:24px}
+.team span{padding:0 16px;border-left:1px solid var(--border)}
+.team span:first-child{padding-left:0;border-left:none}
+.subprod{font-size:clamp(15px,1.6vw,21px);color:var(--ink);margin-top:4px}
+.subprod .p{color:var(--pilot)}.subprod .w{color:var(--yellow)}
+.brandmark{position:absolute;top:24px;right:28px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+/* duo cards */
+.duo{display:grid;grid-template-columns:1fr 54px 1fr;gap:0;align-items:stretch;margin-top:26px}
+.agentcard{border:1px solid var(--border);border-radius:14px;padding:22px;background:linear-gradient(180deg,var(--panel),rgba(16,21,29,.4))}
+.agentcard.p{border-top:3px solid var(--pilot)}.agentcard.w{border-top:3px solid var(--watch)}
+.agentcard .nm{font-family:var(--disp);font-weight:700;font-size:24px}
+.agentcard .wh{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin:8px 0 11px}
+.agentcard.p .wh{color:var(--pilot)}.agentcard.w .wh{color:var(--watch)}
+.agentcard p{font-size:13.5px;color:var(--dim);line-height:1.5}
+.hand{display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--yellow);font-size:22px}
+.hand .lbl{font-family:var(--mono);font-size:9px;color:var(--faint);writing-mode:vertical-rl;letter-spacing:.16em;margin-top:8px;text-transform:uppercase}
+/* cost — two agents */
+.costtwo{display:flex;flex-direction:column;gap:16px;margin-top:12px}
+.coststrip{display:flex;align-items:center;gap:22px;border:1px solid var(--border);border-radius:14px;padding:16px 20px;background:var(--panel)}
+.coststrip.pilot{border-left:3px solid var(--pilot)}
+.coststrip.watch{border-left:3px solid var(--watch)}
+.coststrip .who{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;width:120px;flex-shrink:0}
+.coststrip.pilot .who{color:var(--pilot)}.coststrip.watch .who{color:var(--watch)}
+.coststrip .pair{display:flex;align-items:center;gap:18px;flex:1;flex-wrap:wrap}
+.coststrip .num{font-family:var(--disp);font-weight:800;font-size:clamp(30px,4.4vw,52px);line-height:.9}
+.coststrip .num.bad{color:var(--danger)}.coststrip .num.good{color:var(--success)}
+.coststrip .ar{color:var(--faint);font-size:24px}
+.coststrip .cap{font-size:12px;color:var(--dim);line-height:1.45;max-width:330px}
+/* flow lanes */
+.lane{margin-top:14px}
+.lanehd{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px}
+.lanehd.p{color:var(--pilot)}.lanehd.w{color:var(--watch)}
+.flow{display:flex;align-items:stretch;gap:6px}
+.fnode{flex:1;min-width:0;border:1px solid var(--border);border-radius:9px;padding:10px 9px;background:var(--panel);position:relative}
+.fnode.p{border-bottom:2px solid var(--pilot)}.fnode.w{border-bottom:2px solid var(--watch)}
+.fnode.g{border-bottom:2px solid var(--human);background:rgba(200,155,255,.06)}
+.fnode .ft{font-size:11.5px;font-weight:600;line-height:1.25}
+.fnode .fm{font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:4px;letter-spacing:.02em}
+.fnode .gate{position:absolute;top:-8px;right:8px;font-size:12px}
+.deployrow{display:flex;align-items:center;justify-content:center;gap:10px;margin:11px 0;padding:9px 14px;border:1px dashed var(--yellow);border-radius:9px;background:rgba(255,206,50,.04);font-size:12.5px;color:var(--ink)}
+.deployrow b{color:var(--yellow)}
+.deployrow .mono{font-family:var(--mono);font-size:11px;color:var(--dim)}
+/* architecture */
+.arch{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+.atier{display:flex;gap:9px;align-items:stretch}
+.atier .tlbl{font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.07em;text-transform:uppercase;width:110px;flex-shrink:0;display:flex;align-items:center}
+.abox{flex:1;border:1px solid var(--border);border-radius:10px;padding:10px 13px;background:var(--panel)}
+.abox .at{font-size:13px;font-weight:600}.abox .am{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:3px}
+.abox.p{border-left:3px solid var(--pilot)}.abox.w{border-left:3px solid var(--watch)}
+.abox.gw{border-left:3px solid var(--success)}.abox.mem{border-left:3px solid var(--human)}.abox.sys{border-left:3px solid var(--faint)}
+.platwrap{border:1px dashed rgba(255,206,50,.4);border-radius:12px;padding:10px;background:rgba(255,206,50,.03)}
+.platwrap .pl{font-family:var(--mono);font-size:9.5px;color:var(--yellow);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+/* chips */
+.chips{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.tchip{border:1px solid var(--border);border-radius:10px;padding:14px 18px;background:var(--panel);min-width:150px}
+.tchip .ch{font-family:var(--disp);font-weight:700;font-size:16px}
+.tchip .cs{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:4px;letter-spacing:.03em}
+.tchip.hl{border-color:var(--yellow);background:rgba(255,206,50,.05)}
+/* real vs mock */
+.rv{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
+.rvcol{border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+.rvcol.real{border-top:3px solid var(--real)}.rvcol.seam{border-top:3px solid var(--seam)}
+.rvcol .rh{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:13px;display:flex;align-items:center;gap:8px}
+.rvcol.real .rh{color:var(--real)}.rvcol.seam .rh{color:var(--seam)}
+.rvcol .dotk{width:9px;height:9px;border-radius:50%}
+.rvcol.real .dotk{background:var(--real)}.rvcol.seam .dotk{background:var(--seam)}
+.rvcol ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+.rvcol li{font-size:13px;color:var(--ink);line-height:1.35;padding-left:18px;position:relative}
+.rvcol li::before{content:'';position:absolute;left:0;top:6px;width:7px;height:7px;border-radius:2px}
+.rvcol.real li::before{background:var(--real)}.rvcol.seam li::before{background:var(--seam)}
+.rvcol li span{display:block;font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+/* demo */
+.s-demo{align-items:center;text-align:center}
+.demoseq{font-family:var(--mono);font-size:clamp(11px,1.25vw,14px);color:var(--dim);margin-top:10px;letter-spacing:.01em;line-height:1.9;max-width:880px}
+.demoseq b{color:var(--ink)}.demoseq .r1{color:var(--danger)}.demoseq .g1{color:var(--success)}
+.demopulse{width:min(760px,90%);margin:22px auto 0}
+/* close */
+.vals{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
+.val{border:1px solid var(--border);border-radius:12px;padding:15px 16px;background:var(--panel)}
+.val.p{border-top:3px solid var(--pilot)}.val.w{border-top:3px solid var(--watch)}
+.val.h{border-top:3px solid var(--human)}.val.y{border-top:3px solid var(--yellow)}
+.val .vt{font-size:13.5px;font-weight:600;line-height:1.2}
+.val .vd{font-size:11.5px;color:var(--dim);margin-top:6px;line-height:1.4}
+.closing{font-family:var(--disp);font-weight:800;font-size:clamp(30px,4.6vw,60px);line-height:1;letter-spacing:-.02em;margin-top:24px}
+.closing em{color:var(--yellow)}
+.closeteam{font-family:var(--mono);font-size:13px;color:var(--faint);margin-top:18px;letter-spacing:.05em}
+/* chrome */
+.chrome{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:16px;padding:14px 22px;z-index:30;pointer-events:none}
+.dots{display:flex;gap:7px;pointer-events:auto}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--border);cursor:pointer;transition:.2s}
+.dot.on{background:var(--yellow);transform:scale(1.3)}
+.count{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--faint);pointer-events:auto}
+.count b{color:var(--ink)}
+.prog{position:fixed;top:0;left:0;height:2px;background:var(--yellow);z-index:31;transition:width .4s;box-shadow:0 0 8px rgba(255,206,50,.6)}
+.hintkeys{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.08em;z-index:30;opacity:.55}
+@media(max-width:680px){.slide{padding:30px 24px}.duo{grid-template-columns:1fr}.rv,.vals{grid-template-columns:1fr}.atier .tlbl{display:none}.coststrip{flex-direction:column;align-items:flex-start;gap:10px}}
+</style>
+</head>
+<body>
+<div class="prog" id="prog"></div>
+<div class="stage"><div class="deck" id="deck">
+
+<!-- 1 · TITLE -->
+<section class="slide s-title active">
+  <div class="brandmark r" style="--d:.5s">Vibe Coding 2026</div>
+  <div class="eyebrow r" style="--d:.05s">Release intelligence, end to end</div>
+  <div class="titlewrap r" style="--d:.12s"><h1>AI&nbsp;Pulse</h1><span class="tag">From comment to confidence.</span></div>
+  <div class="pulseband"><svg class="pulse" viewBox="0 0 1000 90" preserveAspectRatio="none"><path d="M0,45 L150,45 L180,45 L196,18 L212,72 L228,8 L244,45 L420,45 L450,45 L466,30 L482,58 L498,45 L660,45 L690,45 L706,20 L722,70 L738,10 L754,45 L1000,45"/></svg></div>
+  <div class="subprod r" style="--d:.2s"><span class="p">ReleasePilot</span> + <span class="w">ReleaseWatch</span> &mdash; two AI agents for the release lifecycle.</div>
+  <div class="team r" style="--d:.3s"><span>Veggalam Vamshi</span><span>Chhatwani Anisha</span><span>Venkata Sai Mohit</span><span>Grandle Trevor</span></div>
+</section>
+
+<!-- 2 · PAIN -->
+<section class="slide">
+  <div class="eyebrow r">The problem</div>
+  <h2 class="r" style="--d:.08s">The deploy went green.<br>The system was already broken.</h2>
+  <div class="pulseband r" style="--d:.2s;width:min(700px,80%)"><svg class="pulse flat" viewBox="0 0 1000 90" preserveAspectRatio="none"><path d="M0,45 L180,45 L196,18 L212,72 L228,8 L244,45 L300,45 L1000,45"/></svg></div>
+  <p class="lead r" style="--d:.3s">Health checks pass. But a downstream service has <strong>silently stopped</strong> &mdash; no error, no alert, just a flatline no dashboard is watching for.</p>
+  <div class="kick r" style="--d:.42s"><b>By the time anyone notices, it&rsquo;s already too late</b> &mdash; transactions dropped, and the customer&rsquo;s messages were never sent.</div>
+</section>
+
+<!-- 3 · COST (BOTH AGENTS) -->
+<section class="slide">
+  <div class="eyebrow r">What it costs &mdash; both halves of the lifecycle</div>
+  <div class="costtwo">
+    <div class="coststrip pilot r" style="--d:.12s">
+      <div class="who">ReleasePilot<br>pre-release</div>
+      <div class="pair"><span class="num bad">~90 min</span><span class="ar">&rarr;</span><span class="num good">minutes</span>
+        <span class="cap">Every release: hand-filling the QCPR docs, the Confluence pages, and the ServiceNow change ticket, then chasing approvals &mdash; now drafted &amp; submitted for you; you just confirm.</span></div>
+    </div>
+    <div class="coststrip watch r" style="--d:.3s">
+      <div class="who">ReleaseWatch<br>post-release</div>
+      <div class="pair"><span class="num bad">~3 hrs</span><span class="ar">&rarr;</span><span class="num good">minutes</span>
+        <span class="cap">To notice a silent failure and find the root cause &mdash; now caught and explained with evidence the moment it drifts.</span></div>
+    </div>
+  </div>
+  <div class="kick r" style="--d:.5s"><b>Both halves of every release</b> &mdash; the prep and the watch. <span style="color:var(--faint)">(team estimates)</span></div>
+</section>
+
+<!-- 4 · THE IDEA -->
+<section class="slide">
+  <div class="eyebrow r">The idea</div>
+  <h2 class="r" style="--d:.06s">Two AI teammates for the release lifecycle.</h2>
+  <div class="duo">
+    <div class="agentcard p r" style="--d:.16s"><div class="nm">ReleasePilot</div><div class="wh">before deploy &middot; predict &amp; prepare</div><p>Computes the release risk, then does the manual prep &mdash; the <strong>QCPR docs</strong>, the <strong>Confluence pages</strong>, and the <strong>ServiceNow change ticket</strong> &mdash; posting every step to Teams and pausing for you to confirm.</p></div>
+    <div class="hand r" style="--d:.26s">&#129309;<span class="lbl">risk packet</span></div>
+    <div class="agentcard w r" style="--d:.36s"><div class="nm">ReleaseWatch</div><div class="wh">after deploy &middot; detect &amp; explain</div><p>Watches the right signals, catches the drift health checks miss, and turns a failure into a <strong>root-cause analysis with a confidence score</strong> &mdash; then raises the incident.</p></div>
+  </div>
+  <div class="kick r" style="--d:.5s"><b>The handoff is the insight</b> &mdash; the watcher arrives already briefed on what to watch for.</div>
+</section>
+
+<!-- 5 · FLOW (DETAILED HITL) -->
+<section class="slide">
+  <div class="eyebrow r">How it works &mdash; end to end</div>
+  <div class="lane r" style="--d:.1s">
+    <div class="lanehd p">ReleasePilot &middot; pre-release &middot; you confirm at each step in Teams</div>
+    <div class="flow">
+      <div class="fnode p"><div class="ft">Comment on Jira story</div><div class="fm">trigger</div></div>
+      <div class="fnode g"><div class="gate">&#128100;</div><div class="ft">&ldquo;Pre-checks done&rdquo;</div><div class="fm">Teams &rarr; proceed?</div></div>
+      <div class="fnode p"><div class="ft">Gather context</div><div class="fm">Jira&middot;Confluence&middot;SNOW&middot;SharePoint</div></div>
+      <div class="fnode g"><div class="gate">&#128100;</div><div class="ft">QCPR + Confluence updated</div><div class="fm">review &amp; confirm</div></div>
+      <div class="fnode g"><div class="gate">&#128100;</div><div class="ft">SNOW submitted + notified</div><div class="fm">email/Teams &rarr; approve</div></div>
+      <div class="fnode p"><div class="ft">Ticket &rarr; Implement</div><div class="fm">ready to deploy</div></div>
+    </div>
+  </div>
+  <div class="deployrow r" style="--d:.34s">DevOps deploys on the date <span class="mono">&rarr; ServiceNow logs &ldquo;app deployed in CDE2&rdquo; &rarr;</span> <b>&#129309; ReleaseWatch wakes</b></div>
+  <div class="lane r" style="--d:.42s">
+    <div class="lanehd w">ReleaseWatch &middot; post-release</div>
+    <div class="flow">
+      <div class="fnode w"><div class="ft">Watch &mdash; all clear</div><div class="fm">L1 hourly</div></div>
+      <div class="fnode w"><div class="ft">Unexplained drift</div><div class="fm">L2 amber + alert</div></div>
+      <div class="fnode w"><div class="ft">RCA + incident</div><div class="fm">L3 &middot; conf 0.84</div></div>
+      <div class="fnode g"><div class="gate">&#128100;</div><div class="ft">Acknowledge</div><div class="fm">on-call</div></div>
+      <div class="fnode w"><div class="ft">Recovery</div><div class="fm">back to baseline</div></div>
+    </div>
+  </div>
+  <div class="kick r" style="--d:.55s">&#128276; <b>Teams keeps you informed at every step</b> &mdash; you stay in control at <b>four checkpoints</b>.</div>
+</section>
+
+<!-- 6 · ARCHITECTURE -->
+<section class="slide">
+  <div class="eyebrow r">In production</div>
+  <h2 class="r" style="--d:.06s">Built to run on the Agentic AI Platform.</h2>
+  <div class="arch">
+    <div class="atier r" style="--d:.16s"><div class="tlbl">People</div><div class="abox sys"><div class="at">Jira story &amp; team channel</div><div class="am">trigger + the four approvals</div></div></div>
+    <div class="platwrap r" style="--d:.26s"><div class="pl">Agentic AI Platform</div>
+      <div class="atier" style="margin-bottom:8px"><div class="tlbl">Agents</div>
+        <div class="abox p"><div class="at">ReleasePilot</div><div class="am">agent runtime</div></div>
+        <div class="abox w"><div class="at">ReleaseWatch</div><div class="am">agent runtime</div></div>
+      </div>
+      <div class="atier"><div class="tlbl">Shared</div>
+        <div class="abox gw"><div class="at">LLM Gateway &rarr; Claude</div><div class="am">the reasoning</div></div>
+        <div class="abox gw"><div class="at">MCP Gateway</div><div class="am">the actions</div></div>
+        <div class="abox mem"><div class="at">Agent Memory</div><div class="am">the handoff</div></div>
+      </div>
+    </div>
+    <div class="atier r" style="--d:.4s"><div class="tlbl">Systems</div><div class="abox sys"><div class="at">Jira &middot; ServiceNow &middot; Confluence &middot; SharePoint &middot; Bitbucket &middot; Splunk &middot; New Relic</div><div class="am">reached only through the MCP Gateway</div></div></div>
+  </div>
+  <div class="kick r" style="--d:.5s"><b>Governed reasoning, governed actions, humans in control.</b></div>
+</section>
+
+<!-- 7 · HOW WE BUILT IT -->
+<section class="slide">
+  <div class="eyebrow r">How we built it &middot; 24 hours</div>
+  <h2 class="r" style="--d:.06s">Vibe-coded with GitHub Copilot.</h2>
+  <div class="chips">
+    <div class="tchip hl r" style="--d:.16s"><div class="ch">GitHub Copilot</div><div class="cs">the build &middot; vibe coding</div></div>
+    <div class="tchip r" style="--d:.24s"><div class="ch">TypeScript + React</div><div class="cs">the working prototype</div></div>
+    <div class="tchip r" style="--d:.32s"><div class="ch">Claude via LLM Gateway</div><div class="cs">production reasoning &middot; no personal keys</div></div>
+    <div class="tchip r" style="--d:.4s"><div class="ch">Mock data</div><div class="cs">hackathon rule &middot; nothing real</div></div>
+  </div>
+  <div class="kick r" style="--d:.5s"><b>We mocked the rails &mdash; not the machinery.</b> The agent logic is the same code production would run.</div>
+</section>
+
+<!-- 8 · REAL vs MOCKED -->
+<section class="slide">
+  <div class="eyebrow r">Radical honesty</div>
+  <h2 class="r" style="--d:.06s">We didn&rsquo;t fake a demo.<br>We built the engine and mocked the edges.</h2>
+  <div class="rv">
+    <div class="rvcol real r" style="--d:.18s"><div class="rh"><span class="dotk"></span> Real code &mdash; runs right now</div>
+      <ul>
+        <li>Agent orchestration<span>both agents, real sequencing</span></li>
+        <li>Risk engine<span>computes 72 / 28 &mdash; not painted in</span></li>
+        <li>Drift detector<span>classifies L1 / L2 / L3 from thresholds</span></li>
+        <li>Four approval checkpoints<span>real handlers, real state</span></li>
+      </ul>
+    </div>
+    <div class="rvcol seam r" style="--d:.32s"><div class="rh"><span class="dotk"></span> Seam &mdash; one line from production</div>
+      <ul>
+        <li>Live data sources<span>seed JSON &rarr; MCP Gateway</span></li>
+        <li>The RCA reasoning<span>deterministic &rarr; LLM Gateway &rarr; Claude</span></li>
+        <li>System writes<span>UI render &rarr; Confluence / SNOW / Teams</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="kick r" style="--d:.46s"><b>Everything green runs today. Every amber is one line from the platform.</b></div>
+</section>
+
+<!-- 9 · LIVE DEMO -->
+<section class="slide s-demo">
+  <div class="eyebrow r">See it run &middot; 30 seconds</div>
+  <h2 class="r" style="--d:.08s">Watch the screen.</h2>
+  <div class="demoseq r" style="--d:.2s">comment &rarr; <b>proceed</b> &rarr; gather &rarr; Confluence + <b>confirm</b> &rarr; SNOW submit + <b>approve</b> &rarr; deploy &rarr; <span class="r1">flatline</span> &rarr; <b>RCA 0.84</b> &rarr; acknowledge &rarr; <span class="g1">recovery</span></div>
+  <div class="demopulse"><svg class="pulse" viewBox="0 0 1000 90" preserveAspectRatio="none"><path d="M0,45 L200,45 L230,45 L246,18 L262,72 L278,8 L294,45 L430,45 L470,45 L490,45 L520,45 L560,45 L590,20 L606,70 L622,10 L638,45 L1000,45"/></svg></div>
+  <div class="kick r" style="--d:.4s"><b>Live. No video, no slideshow.</b> <span style="color:var(--faint)">(recorded fallback ready)</span></div>
+</section>
+
+<!-- 10 · CLOSE -->
+<section class="slide">
+  <div class="eyebrow r">Why it matters</div>
+  <h2 class="r" style="--d:.06s">Hours of guesswork become minutes of evidence.</h2>
+  <div class="vals">
+    <div class="val p r" style="--d:.14s"><div class="vt">Pre-release, automated</div><div class="vd">QCPR docs, Confluence, and the ServiceNow ticket prepared and submitted for you.</div></div>
+    <div class="val w r" style="--d:.22s"><div class="vt">Post-release, watched</div><div class="vd">Silent failures caught and root-caused in minutes, not hours.</div></div>
+    <div class="val h r" style="--d:.3s"><div class="vt">Explained in Teams</div><div class="vd">Every step posted to the channel &mdash; nothing happens in the dark.</div></div>
+    <div class="val y r" style="--d:.38s"><div class="vt">Humans in control</div><div class="vd">You confirm and approve at four checkpoints, end to end.</div></div>
+  </div>
+  <div class="kick r" style="--d:.46s"><b>What&rsquo;s next:</b> the seams are one-line swaps to the platform &mdash; production-ready by design.</div>
+  <div class="closing r" style="--d:.54s">From comment to <em>confidence</em>.</div>
+  <div class="closeteam r" style="--d:.62s">AI Pulse &nbsp;&middot;&nbsp; Veggalam Vamshi &nbsp;&middot;&nbsp; Chhatwani Anisha &nbsp;&middot;&nbsp; Venkata Sai Mohit &nbsp;&middot;&nbsp; Grandle Trevor</div>
+</section>
+
+</div></div>
+
+<div class="chrome"><div class="dots" id="dots"></div><div class="count"><b id="cur">1</b> / <span id="tot">10</span></div></div>
+<div class="hintkeys">&larr; &rarr; or click to navigate &middot; press F for fullscreen</div>
+
+<script>
+const slides=[...document.querySelectorAll('.slide')];
+const dots=document.getElementById('dots'),prog=document.getElementById('prog'),cur=document.getElementById('cur');
+document.getElementById('tot').textContent=slides.length;
+let i=0;
+slides.forEach((_,n)=>{const d=document.createElement('div');d.className='dot'+(n===0?' on':'');d.onclick=()=>go(n);dots.appendChild(d);});
+const dotEls=[...document.querySelectorAll('.dot')];
+function go(n){i=Math.max(0,Math.min(slides.length-1,n));
+  slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+  dotEls.forEach((d,k)=>d.classList.toggle('on',k===i));
+  cur.textContent=i+1;prog.style.width=((i+1)/slides.length*100)+'%';}
+function next(){go(i+1)} function prev(){go(i-1)}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();next();}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();prev();}
+  else if(e.key==='Home'){go(0);} else if(e.key==='End'){go(slides.length-1);}
+  else if(e.key==='f'||e.key==='F'){const d=document.documentElement;if(!document.fullscreenElement){d.requestFullscreen&&d.requestFullscreen();}else{document.exitFullscreen&&document.exitFullscreen();}}
+});
+document.getElementById('deck').addEventListener('click',e=>{const r=document.getElementById('deck').getBoundingClientRect();(e.clientX-r.left>r.width*0.5)?next():prev();});
+prog.style.width=(1/slides.length*100)+'%';
+</script>
+</body>
+</html>
