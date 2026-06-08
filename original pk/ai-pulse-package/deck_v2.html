@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Pulse · ReleasePilot + ReleaseWatch · Pitch Deck</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  :root {
+    --yellow: #FFCE32;
+    --yellow-deep: #E0B520;
+    --yellow-soft: rgba(255,206,50,.12);
+    --navy: #002856;
+    --black: #0a0e14;
+    --panel: #131820;
+    --panel-2: #1a2230;
+    --panel-3: #222c3d;
+    --ink: #f0f2f5;
+    --dim: #9da9b8;
+    --faint: #6b7785;
+    --line: #2a3547;
+    --danger: #ff6b6b;
+    --warning: #ffb454;
+    --success: #7fd99b;
+    --pilot: #5b8fc7;
+    --watch: #FFCE32;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--black);
+    color: var(--ink);
+    overflow: hidden;
+  }
+
+  /* progress + chrome */
+  .progress {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: var(--yellow); z-index: 100;
+    transition: width .3s ease;
+  }
+  .chrome {
+    position: fixed; bottom: 22px; right: 28px;
+    display: flex; align-items: center; gap: 16px; z-index: 100;
+  }
+  .counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; color: var(--faint);
+  }
+  .counter .cur { color: var(--yellow); font-weight: 700; }
+  .nav-btn {
+    width: 34px; height: 34px; border-radius: 7px;
+    background: var(--panel-2); border: 1px solid var(--line);
+    color: var(--ink); cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+  }
+  .nav-btn:hover { background: var(--panel-3); border-color: var(--yellow); }
+  .deck-tag {
+    position: fixed; bottom: 22px; left: 28px; z-index: 100;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--faint);
+  }
+  .deck-tag b { color: var(--yellow-deep); }
+
+  /* slides */
+  .slide {
+    position: fixed; inset: 0;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6vh 8vw;
+    opacity: 0;
+    transition: opacity .3s ease;
+  }
+  .slide.active { display: flex; opacity: 1; }
+  .slide.interactive-only::before {
+    content: "INTERACTIVE ONLY · strip before PPT";
+    position: absolute; top: 24px; right: 28px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--faint); letter-spacing: .05em;
+    border: 1px dashed var(--line); padding: 3px 8px; border-radius: 4px;
+  }
+
+  .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 500; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--yellow);
+    margin-bottom: 18px;
+  }
+  h1 { font-size: clamp(34px, 5.5vw, 68px); font-weight: 900; letter-spacing: -.03em; line-height: 1.02; }
+  h2 { font-size: clamp(26px, 3.6vw, 44px); font-weight: 800; letter-spacing: -.02em; line-height: 1.1; }
+  h3 { font-size: clamp(18px, 2vw, 26px); font-weight: 700; letter-spacing: -.01em; }
+  .lede { font-size: clamp(16px, 1.7vw, 22px); color: var(--dim); max-width: 60ch; margin-top: 18px; line-height: 1.45; }
+  .accent { color: var(--yellow); }
+  .pilot-c { color: var(--pilot); }
+  .watch-c { color: var(--watch); }
+
+  /* title slide */
+  .title-logo {
+    display: inline-flex; align-items: center; gap: 14px;
+    margin-bottom: 36px;
+  }
+  .pulse-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--yellow);
+    box-shadow: 0 0 0 0 rgba(255,206,50,.6);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,206,50,.5); }
+    70% { box-shadow: 0 0 0 16px rgba(255,206,50,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,206,50,0); }
+  }
+  .title-team {
+    margin-top: 48px; display: flex; gap: 28px; flex-wrap: wrap;
+    font-size: 15px; color: var(--dim);
+  }
+  .title-team .role { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--faint); display: block; margin-bottom: 2px; }
+  .title-foot {
+    position: absolute; bottom: 6vh; left: 8vw;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--faint);
+  }
+
+  /* generic layout helpers */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: center; }
+  .points { margin-top: 28px; display: flex; flex-direction: column; gap: 16px; }
+  .point { display: flex; gap: 14px; align-items: flex-start; }
+  .point .n {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700;
+    color: var(--yellow); flex-shrink: 0; padding-top: 3px; min-width: 22px;
+  }
+  .point .pt { font-size: clamp(15px, 1.5vw, 19px); color: var(--ink); }
+  .point .pt span { color: var(--dim); }
+
+  /* diagram boxes (reused from diagrams html) */
+  .box { background: var(--panel-2); border: 1px solid var(--line); border-radius: 9px; padding: 13px 15px; }
+  .box-t { font-size: 14px; font-weight: 700; }
+  .box-s { font-size: 12px; color: var(--dim); margin-top: 4px; }
+  .box.accent { border-color: var(--yellow); background: var(--yellow-soft); }
+  .box.pilot { border-color: var(--pilot); background: rgba(91,143,199,.1); }
+  .box.watch { border-color: var(--watch); background: rgba(255,206,50,.08); }
+  .box.danger { border-color: var(--danger); background: rgba(255,107,107,.08); }
+  .box.warning { border-color: var(--warning); background: rgba(255,180,84,.08); }
+  .box.success { border-color: var(--success); background: rgba(127,217,155,.08); }
+  .box.ghost { background: transparent; border-style: dashed; }
+  .row { display: flex; gap: 14px; align-items: stretch; }
+  .col { display: flex; flex-direction: column; gap: 14px; }
+  .grow > * { flex: 1; }
+  .wrap { flex-wrap: wrap; }
+  .arrow { display: flex; align-items: center; justify-content: center; color: var(--faint); font-size: 22px; min-width: 30px; font-family: 'JetBrains Mono', monospace; }
+  .arrow-v { display: flex; flex-direction: column; align-items: center; color: var(--faint); font-size: 18px; padding: 6px 0; }
+  .arrow-label { font-size: 11px; color: var(--yellow-deep); font-family: 'JetBrains Mono', monospace; text-align: center; }
+  .group { border: 1px dashed var(--line); border-radius: 11px; padding: 16px; }
+  .group-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--yellow-deep); margin-bottom: 12px; }
+  .tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 8px; border-radius: 4px; background: var(--panel-3); color: var(--dim); margin: 3px 4px 3px 0; }
+  .tag.y { background: var(--yellow-soft); color: var(--yellow); }
+  .tag.b { background: rgba(91,143,199,.15); color: var(--pilot); }
+
+  /* metric viz for problem slide */
+  .sys-row { display: flex; gap: 16px; align-items: stretch; margin-top: 10px; }
+  .sys { flex: 1; border-radius: 10px; padding: 18px; border: 1.5px solid; }
+  .sys.ok { border-color: var(--success); background: rgba(127,217,155,.07); }
+  .sys.bad { border-color: var(--danger); background: rgba(255,107,107,.07); }
+  .sys .label { font-size: 13px; font-weight: 700; }
+  .sys .quote { font-family: 'JetBrains Mono', monospace; font-size: 13px; margin: 6px 0; }
+  .sys.ok .quote { color: var(--success); }
+  .sys.bad .quote { color: var(--danger); }
+  .sys .detail { font-size: 12px; color: var(--dim); }
+
+  /* demo scene slides */
+  .scene-time { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--yellow); font-weight: 700; }
+  .scene-stage { margin-top: 24px; display: grid; grid-template-columns: 1.1fr 1fr; gap: 32px; align-items: center; }
+  .scene-visual { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 24px; }
+  .tile-mini { border-radius: 8px; padding: 11px 13px; border: 1.5px solid; margin-bottom: 8px; }
+  .tile-mini .c { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--dim); }
+  .tile-mini .app { font-size: 13px; font-weight: 600; }
+  .tm-green { border-color: var(--success); background: rgba(127,217,155,.07); }
+  .tm-amber { border-color: var(--warning); background: rgba(255,180,84,.08); }
+  .tm-red { border-color: var(--danger); background: rgba(255,107,107,.08); }
+  .badge-mini { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; float: right; }
+  .bm-green { background: rgba(127,217,155,.15); color: var(--success); }
+  .bm-amber { background: rgba(255,180,84,.15); color: var(--warning); }
+  .bm-red { background: rgba(255,107,107,.15); color: var(--danger); }
+
+  .rca-box { background: var(--black); border: 1px solid var(--danger); border-radius: 10px; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6; }
+  .rca-box .conf { color: var(--yellow); font-weight: 700; font-size: 15px; }
+  .rca-box .lbl { color: var(--danger); font-weight: 700; }
+
+  /* vs grid */
+  .vs { display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; align-items: start; margin-top: 24px; }
+  .vs-head { font-size: 14px; font-weight: 700; text-align: center; padding: 9px; border-radius: 7px; margin-bottom: 14px; }
+  .vs-prod { background: var(--yellow-soft); color: var(--yellow); }
+  .vs-demo { background: rgba(91,143,199,.12); color: var(--pilot); }
+  .vs-mid { writing-mode: vertical-rl; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--faint); align-self: center; }
+
+  .quote-line {
+    margin-top: 26px; padding: 16px 20px; border-left: 3px solid var(--yellow);
+    background: var(--yellow-soft); border-radius: 0 8px 8px 0;
+    font-size: clamp(14px, 1.5vw, 18px); font-style: italic; color: var(--ink); max-width: 80ch;
+  }
+
+  .big-stat { display: flex; gap: 50px; margin-top: 30px; flex-wrap: wrap; }
+  .stat .num { font-size: clamp(40px, 6vw, 76px); font-weight: 900; letter-spacing: -.03em; line-height: 1; }
+  .stat .num.good { color: var(--success); }
+  .stat .num.bad { color: var(--danger); }
+  .stat .cap { font-size: 14px; color: var(--dim); margin-top: 8px; max-width: 22ch; }
+
+  .principles { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; margin-top: 30px; }
+  .principle { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 22px; border-top: 3px solid var(--yellow); }
+  .principle .pn { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--faint); }
+  .principle .ph { font-size: clamp(16px, 1.7vw, 20px); font-weight: 700; margin: 10px 0; }
+  .principle .pb { font-size: 13.5px; color: var(--dim); }
+
+  .qa-list { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .qa { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .qa .q { font-size: 15px; font-weight: 700; color: var(--yellow); }
+  .qa .a { font-size: 14px; color: var(--dim); margin-top: 6px; }
+
+  .need-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 18px; margin-top: 24px; }
+  .need { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+  .need .nh { font-size: 16px; font-weight: 700; }
+  .need .nb { font-size: 13.5px; color: var(--dim); margin-top: 6px; }
+
+  @media (max-width: 820px) {
+    .two-col, .scene-stage, .vs { grid-template-columns: 1fr; }
+    .principles { grid-template-columns: 1fr; }
+    .need-grid { grid-template-columns: 1fr; }
+    .vs-mid { writing-mode: horizontal-tb; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="deck-tag"><b>AI Pulse</b> · ReleasePilot + ReleaseWatch</div>
+<div class="chrome">
+  <span class="counter"><span class="cur" id="cur">1</span> / <span id="total">16</span></span>
+  <button class="nav-btn" id="prev">‹</button>
+  <button class="nav-btn" id="next">›</button>
+</div>
+
+<!-- 1 · TITLE -->
+<section class="slide active">
+  <div class="title-logo">
+    <span class="pulse-dot"></span>
+    <span class="kicker" style="margin:0">AI Pulse</span>
+  </div>
+  <h1><span class="pilot-c">ReleasePilot</span> <span style="color:var(--faint)">+</span> <span class="watch-c">ReleaseWatch</span></h1>
+  <div class="lede">Two cooperating AI agents that own the release lifecycle — from a developer's comment to post-deploy confidence.</div>
+  <div style="margin-top:28px; font-size: clamp(18px,2vw,26px); font-weight:700;">From comment to confidence.</div>
+  <div class="title-team">
+    <div><span class="role">lead</span>Vamshi V</div>
+    <div><span class="role">team</span>Anisha C</div>
+    <div><span class="role">team</span>Sai Mohit</div>
+  </div>
+  <div class="title-foot">Synchrony Vibe Coding 2026 · built for the Synchrony Agentic AI Platform</div>
+</section>
+
+<!-- 2 · THE PROBLEM -->
+<section class="slide">
+  <div class="kicker">The problem</div>
+  <h2>Every release fails in the same window —<br>the first 24 hours after deploy.</h2>
+  <div class="lede">Not because engineers are careless. A deploy succeeds, the app reports healthy — and a downstream link silently dies. Nothing reads the relationship between systems. At 2 AM on a Sunday, that gap is where response time goes to die.</div>
+  <div class="points">
+    <div class="point"><span class="n">→</span><div class="pt">The deploy says <span>"success — health checks green."</span></div></div>
+    <div class="point"><span class="n">→</span><div class="pt">The app says <span>"I'm healthy — 200s, low CPU, zero errors."</span></div></div>
+    <div class="point"><span class="n">→</span><div class="pt">Downstream says <span>nothing at all — it just goes silent.</span></div></div>
+    <div class="point"><span class="n">→</span><div class="pt">Each system has its own monitor. <span>Nothing owns "A should still be talking to B."</span></div></div>
+  </div>
+</section>
+
+<!-- 3 · WHY IT'S HARD -->
+<section class="slide">
+  <div class="kicker">Why it's hard</div>
+  <h2>The failure lives in the <span class="accent">relationship</span>,<br>not in any one system.</h2>
+  <div class="sys-row">
+    <div class="sys ok">
+      <div class="label">application-consumer</div>
+      <div class="quote">"I'm healthy"</div>
+      <div class="detail">HTTP 200s · CPU 19% · 0 errors</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="sys bad">
+      <div class="label">publish path</div>
+      <div class="quote">silently dead</div>
+      <div class="detail">0 msg/min since deploy · logged DEBUG only</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="sys bad">
+      <div class="label">sms-consumer</div>
+      <div class="quote">flatlined</div>
+      <div class="detail">inbound 0/min · baseline ~85/min</div>
+    </div>
+  </div>
+  <div class="quote-line">The app is green. The downstream is silent. No dashboard owns the link between them, so per-system monitoring sees nothing wrong. A human pieces it together in 90+ minutes. ReleaseWatch names it in seconds — because it reads the relationship against what the release intended to change.</div>
+</section>
+
+<!-- 4 · THE IDEA -->
+<section class="slide">
+  <div class="kicker">The idea</div>
+  <h2>Two agents. One lifecycle.<br>A handoff that carries context.</h2>
+  <div class="two-col" style="margin-top:32px">
+    <div class="col">
+      <div class="box pilot"><div class="box-t pilot-c">ReleasePilot · pre-deploy</div><div class="box-s">Reads the Jira story, pulls past incidents, resolves downstream apps, and assembles a <b>risk packet</b> — what's risky about this release and what to watch for.</div></div>
+      <div class="box watch"><div class="box-t watch-c">ReleaseWatch · post-deploy</div><div class="box-s">Reads the risk packet, watches the deploy, escalates proportionally, and generates an evidence-backed root cause when something drifts.</div></div>
+    </div>
+    <div class="col" style="align-items:center; justify-content:center;">
+      <div class="box accent" style="text-align:center; max-width:280px;">
+        <div class="box-t">The risk packet</div>
+        <div class="box-s">passed <b>Pilot → Watch</b> via A2A, persisted in AgentCore Memory. It's what makes post-deploy monitoring contextual instead of generic.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 · PLATFORM FIT -->
+<section class="slide">
+  <div class="kicker">Platform fit</div>
+  <h2>Built <span class="accent">for</span> the Synchrony Agentic AI Platform —<br>not around it.</h2>
+  <div style="margin-top:26px" class="col">
+    <div class="group">
+      <div class="group-label">Orchestration · AgentCore Runtime</div>
+      <div class="row grow wrap">
+        <div class="box pilot"><div class="box-t">ReleasePilot</div></div>
+        <div class="box watch"><div class="box-t">ReleaseWatch</div></div>
+        <div class="box accent"><div class="box-t">A2A handoff</div></div>
+        <div class="box accent"><div class="box-t">Memory</div></div>
+        <div class="box"><div class="box-t">HITL · 3 gates</div></div>
+      </div>
+    </div>
+    <div class="row grow">
+      <div class="group" style="flex:1"><div class="group-label">LLM Gateway</div><div class="box accent"><div class="box-t">→ Claude</div><div class="box-s">L3 RCA reasoning · approved model</div></div></div>
+      <div class="group" style="flex:1"><div class="group-label">MCP Gateway</div><div class="box"><div class="box-t">Jira · ServiceNow · Confluence</div><div class="box-s">Splunk · New Relic · Bitbucket</div></div></div>
+    </div>
+  </div>
+  <div class="quote-line">Every arrow in our architecture lands on a box Synchrony already drew. We didn't invent infrastructure — we asked: what's the first high-value agent you'd run on this platform?</div>
+</section>
+
+<!-- 6 · PRODUCTION ARCHITECTURE -->
+<section class="slide">
+  <div class="kicker">Production architecture</div>
+  <h2>How it actually runs.</h2>
+  <div class="col" style="margin-top:22px">
+    <div class="box ghost" style="text-align:center"><div class="box-s">Event sources → <span class="tag">EventBridge / Kafka · release.lifecycle.*</span></div></div>
+    <div class="arrow-v">↓</div>
+    <div class="group">
+      <div class="group-label">AgentCore Runtime · Python agents</div>
+      <div class="row grow" style="align-items:center">
+        <div class="box pilot" style="flex:1"><div class="box-t">ReleasePilot</div><div class="box-s">risk packet · Confluence · CHG advance</div></div>
+        <div class="col" style="min-width:90px; align-items:center"><div class="arrow-label">A2A</div><div class="arrow">→</div></div>
+        <div class="box watch" style="flex:1"><div class="box-t">ReleaseWatch</div><div class="box-s">L1→L2→L3 · RCA · INC · handoff</div></div>
+      </div>
+    </div>
+    <div class="row grow">
+      <div class="box accent" style="flex:1"><div class="box-t">LLM Gateway → Claude</div></div>
+      <div class="box" style="flex:1"><div class="box-t">MCP Gateway → systems</div></div>
+      <div class="box success" style="flex:1"><div class="box-t">HITL approvals ×3</div></div>
+    </div>
+  </div>
+  <div class="lede" style="margin-top:18px">The hot loop is LLM-heavy — compose context, call Claude, parse structured output, act. That's why production is Python on AgentCore.</div>
+</section>
+
+<!-- 7 · A2A HANDOFF -->
+<section class="slide">
+  <div class="kicker">The architectural insight</div>
+  <h2>The handoff is the product.</h2>
+  <div class="row grow" style="margin-top:30px; align-items:center">
+    <div class="box pilot" style="flex:1">
+      <div class="box-t pilot-c">ReleasePilot builds</div>
+      <div style="margin-top:10px"><span class="tag b">past INCs</span><span class="tag b">failure modes</span><span class="tag b">downstream apps</span><span class="tag b">expected drift thresholds</span></div>
+    </div>
+    <div class="col" style="min-width:150px; align-items:center">
+      <div class="arrow-label">A2A · persisted in Memory</div>
+      <div class="arrow" style="font-size:30px">⟶</div>
+    </div>
+    <div class="box watch" style="flex:1">
+      <div class="box-t watch-c">ReleaseWatch reads</div>
+      <div style="margin-top:10px"><span class="tag y">publish rate drop = critical</span><span class="tag y">downstream 0 = starvation</span><span class="tag y">migration-dep = known INC</span></div>
+    </div>
+  </div>
+  <div class="quote-line">Without the handoff, ReleaseWatch is generic threshold monitoring. With it, every threshold is calibrated to what <i>this release</i> intended. The risk packet is the contract.</div>
+</section>
+
+<!-- 8 · DEMO · DEPLOY + L1 -->
+<section class="slide">
+  <div class="kicker">Live demo · 0:30</div>
+  <h2>Every line is a release being watched.</h2>
+  <div class="scene-stage">
+    <div class="scene-visual">
+      <div class="tile-mini tm-green"><span class="badge-mini bm-green">L1 · risk 28</span><div class="app">credit-apply</div><div class="c">all clear · 4h 22m</div></div>
+      <div class="tile-mini tm-green"><span class="badge-mini bm-green">L1 · risk 72</span><div class="app">application-consumer</div><div class="c">hour 1 · publish + downstream at baseline</div></div>
+      <div class="tile-mini tm-green"><span class="badge-mini bm-green">L1 CLEAR</span><div class="app">rewards-calc-engine</div><div class="c">all clear · 2h 44m</div></div>
+    </div>
+    <div>
+      <h3>Hour 1: clear.</h3>
+      <div class="lede" style="margin-top:14px">application-consumer deployed at risk score 72 — elevated, because it touches messaging and needed a DB migration. First hour: publish rate and all three downstream consumers at baseline. credit-apply sits green at risk 28. The contract's holding.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 · DEMO · L2 AMBER -->
+<section class="slide">
+  <div class="kicker">Live demo · 1:00</div>
+  <h2>Hour 2: something drifts.</h2>
+  <div class="scene-stage">
+    <div class="scene-visual">
+      <div class="tile-mini tm-amber"><span class="badge-mini bm-amber">L2 DRIFT</span><div class="app">application-consumer</div><div class="c">sms-consumer inbound collapsing · 85 → 9/min</div></div>
+      <div class="box warning" style="margin-top:12px"><div class="box-t">⚠ L2 amber alert</div><div class="box-s">Email → on-call DL · Teams post · 15-min cadence started</div></div>
+    </div>
+    <div>
+      <h3>Unexplained drift.</h3>
+      <div class="lede" style="margin-top:14px">application-consumer still reports healthy — but sms-consumer's inbound is collapsing toward zero. The release said downstream rates wouldn't change. They're cratering. Outside the risk packet's contract — so it escalates. Not a threshold breach. A <i>violated expectation.</i></div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 · DEMO · L3 RCA -->
+<section class="slide">
+  <div class="kicker">Live demo · 1:30 — the headline</div>
+  <h2>30 minutes unresolved → <span class="accent">L3 root cause.</span></h2>
+  <div class="scene-stage">
+    <div class="rca-box">
+      <div class="lbl">ROOT CAUSE</div>
+      Migration subtask ACQ-3852 (create messaging_config) never ran on CDE2. The publisher couldn't initialize against the missing schema and silently stopped publishing — starving all three downstream consumers.<br><br>
+      <div class="lbl">EVIDENCE</div>
+      · 3 downstream consumers → 0/min at exact deploy time<br>
+      · app HTTP healthy · 0 errors (init logs DEBUG only)<br>
+      · migration ACQ-3852 = NOT RUN on CDE2 (ran in QA)<br>
+      · past INC0221904: identical pattern<br><br>
+      <span class="conf">DIAGNOSTIC CONFIDENCE: 0.84</span>
+    </div>
+    <div>
+      <h3>The reasoning converges.</h3>
+      <div class="lede" style="margin-top:14px">Exact deploy-time correlation across three consumers, an unrun migration subtask, and a matching past incident — composed into one RCA with a calibrated confidence score. INC created automatically. This is the moment the room goes quiet.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 · DEMO · HANDOFF + RECOVERY -->
+<section class="slide">
+  <div class="kicker">Live demo · 3:00</div>
+  <h2>Hand off to a human. Then recover.</h2>
+  <div class="scene-stage">
+    <div class="scene-visual">
+      <div class="box danger"><div class="box-t">🔴 L3 · CHG0049182</div><div class="box-s">Acknowledge · Downgrade · Open INC</div></div>
+      <div class="arrow-v">↓ Anisha acknowledges · rolls back</div>
+      <div class="tile-mini tm-green"><span class="badge-mini bm-green">RECOVERED</span><div class="app">application-consumer</div><div class="c">metrics back to baseline</div></div>
+    </div>
+    <div>
+      <h3>The agent does the homework.<br>The human decides.</h3>
+      <div class="lede" style="margin-top:14px">On-call has 30 seconds to read a structured RCA instead of 90 minutes chasing the wrong system. Acknowledge keeps the INC open for the post-mortem. Audit trail intact.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 · DEMO VS PRODUCTION -->
+<section class="slide">
+  <div class="kicker">Honesty slide</div>
+  <h2>What's real vs what we simulated.</h2>
+  <div class="vs">
+    <div>
+      <div class="vs-head vs-prod">PRODUCTION</div>
+      <div class="col">
+        <div class="box"><div class="box-s">2 Python agents · AgentCore + A2A</div></div>
+        <div class="box"><div class="box-s">Claude via LLM Gateway</div></div>
+        <div class="box"><div class="box-s">MCP Gateway · live system pulls</div></div>
+        <div class="box"><div class="box-s">Platform HITL approvals</div></div>
+      </div>
+    </div>
+    <div class="vs-mid">maps 1:1</div>
+    <div>
+      <div class="vs-head vs-demo">DEMO (4 min)</div>
+      <div class="col">
+        <div class="box pilot"><div class="box-s">React state machine · vibe-coded w/ Copilot</div></div>
+        <div class="box pilot"><div class="box-s">Pre-rendered RCA · gateway not reachable in 24h</div></div>
+        <div class="box pilot"><div class="box-s">Pre-seeded JSON · real API response shapes</div></div>
+        <div class="box pilot"><div class="box-s">Mocked approval UI</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="quote-line">We vibe-coded the experience in TypeScript so we could show the full flow in four minutes. Production runs in Python on AgentCore with Claude through the LLM Gateway. The architecture maps one-to-one; the demo shows the behavior.</div>
+</section>
+
+<!-- 13 · THREE PRINCIPLES -->
+<section class="slide">
+  <div class="kicker">Why this works</div>
+  <h2>Three principles.</h2>
+  <div class="principles">
+    <div class="principle">
+      <div class="pn">01</div>
+      <div class="ph">Two agents share an artifact</div>
+      <div class="pb">The risk packet handoff via A2A means state lives in the artifact, not the infrastructure. Recovery is automatic; the handoff is the insight.</div>
+    </div>
+    <div class="principle">
+      <div class="pn">02</div>
+      <div class="ph">Humans approve the big decisions</div>
+      <div class="pb">Three HITL gates. The agent does the homework so humans decide in seconds. It never advances a major decision alone.</div>
+    </div>
+    <div class="principle">
+      <div class="pn">03</div>
+      <div class="ph">Cross-system over per-system</div>
+      <div class="pb">Reading metrics across systems against release intent catches relationship failures that per-system thresholds miss entirely.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 · THE VALUE / CLOSE -->
+<section class="slide">
+  <div class="kicker">The value</div>
+  <h2>57 minutes, not three hours.</h2>
+  <div class="big-stat">
+    <div class="stat"><div class="num good">57<span style="font-size:.4em">min</span></div><div class="cap">drift detection to recovery, with the agent</div></div>
+    <div class="stat"><div class="num bad">3+<span style="font-size:.4em">hrs</span></div><div class="cap">on-call chasing the wrong system, without it</div></div>
+  </div>
+  <div class="lede" style="margin-top:30px">Multiply by every release and every after-hours deploy. The agent gives on-call a 60-minute head start on the releases that go wrong.</div>
+  <div style="margin-top:32px; font-size: clamp(22px,2.6vw,34px); font-weight:800;">AI Pulse · <span class="pilot-c">ReleasePilot</span> + <span class="watch-c">ReleaseWatch</span>.<br><span class="accent">From comment to confidence.</span></div>
+</section>
+
+<!-- 15 · DEFENDING THE PITCH (interactive only) -->
+<section class="slide interactive-only">
+  <div class="kicker">Defending the pitch · internal</div>
+  <h2>Anticipated questions.</h2>
+  <div class="qa-list">
+    <div class="qa"><div class="q">Is this real or a mockup?</div><div class="a">A deliberate TypeScript prototype of the agent experience. Production is Python on AgentCore with Claude via the LLM Gateway. We have a slide showing exactly what's real vs simulated. The L3 prompt is real and tested.</div></div>
+    <div class="qa"><div class="q">How is this different from existing AIOps?</div><div class="a">AIOps catches anomalies per system. Here every system looked fine — the app was green, the consumers just stopped receiving. We catch the relationship by reading release intent. The risk packet — knowing what the deploy intended — is what no AIOps tool has.</div></div>
+    <div class="qa"><div class="q">Why two agents, why A2A?</div><div class="a">A2A is a platform primitive. Clean ownership boundaries. The risk-packet handoff is what makes post-deploy monitoring contextual. ReleaseWatch can also run standalone for manual deploys.</div></div>
+    <div class="qa"><div class="q">What if the RCA is wrong?</div><div class="a">Confidence is calibrated and capped at 0.95 — never certainty. The agent never takes the major action; humans approve. The L3 card always offers Downgrade. AgentCore Evaluations flags misses for tuning.</div></div>
+  </div>
+</section>
+
+<!-- 16 · WHAT WE NEED (interactive only) -->
+<section class="slide interactive-only">
+  <div class="kicker">What we'd need to build this for real · internal</div>
+  <h2>From prototype to production.</h2>
+  <div class="need-grid">
+    <div class="need"><div class="nh">Platform access</div><div class="nb">AgentCore Runtime + the LLM Gateway (Claude) + MCP Gateway connectors for Jira, ServiceNow, Confluence, Splunk, New Relic — most already in the catalog.</div></div>
+    <div class="need"><div class="nh">Event wiring</div><div class="nb">EventBridge/Kafka hookup to Jira webhooks, CHG state changes, and UDeploy deploy-completion events.</div></div>
+    <div class="need"><div class="nh">Risk packet calibration</div><div class="nb">Per-application-family drift thresholds and expected-shift templates — the hardest and highest-value tuning, via AgentCore Evaluations.</div></div>
+    <div class="need"><div class="nh">A scoped pilot</div><div class="nb">One application family, human-in-the-loop on every escalation, measuring RCA accuracy and time-to-recovery against the baseline, then expand.</div></div>
+  </div>
+  <div class="lede" style="margin-top:22px">The agent logic is modest — hundreds of lines of Python plus four tested prompts. The work is integration. With platform access, this is weeks, not months.</div>
+</section>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let idx = 0;
+  document.getElementById('total').textContent = total;
+
+  function show(n) {
+    idx = Math.max(0, Math.min(total - 1, n));
+    slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+    document.getElementById('cur').textContent = idx + 1;
+    document.getElementById('progress').style.width = ((idx + 1) / total * 100) + '%';
+  }
+  document.getElementById('next').onclick = () => show(idx + 1);
+  document.getElementById('prev').onclick = () => show(idx - 1);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); show(idx + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); show(idx - 1); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(total - 1);
+  });
+  show(0);
+</script>
+
+</body>
+</html>

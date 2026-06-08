@@ -1,0 +1,542 @@
+<!-- SUPERSEDED-BANNER: SUPERSEDED — pre-platform-pivot strategy. Kept for history. -->
+> ⚠️ **SUPERSEDED — pre-platform-pivot strategy. Kept for history.**
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Pulse · 5 Paths Strategy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --syf-yellow:#FFCE32;
+  --syf-yellow-deep:#E0B520;
+  --syf-yellow-soft:rgba(255,206,50,.12);
+  --syf-navy:#002856;
+  --syf-black:#0a0e14;
+  --bg:#0a0e14;
+  --panel:#131820;
+  --panel2:#1a2230;
+  --panel3:#222b39;
+  --border:#2a3340;
+  --border-bright:#3a4757;
+  --ink:#f0f2f5;
+  --dim:#9da9b8;
+  --faint:#6b7785;
+  --danger:#ff6b6b;
+  --warning:#ffb454;
+  --success:#7fd99b;
+  --pilot:#5b8fc7;
+  --watch:#FFCE32;
+  --font-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-sans);-webkit-font-smoothing:antialiased;line-height:1.55}
+.container{max-width:1400px;margin:0 auto;padding:36px 28px 80px}
+
+.hero{margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.team-line{display:flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--syf-yellow);margin-bottom:10px}
+.team-line .dot{width:8px;height:8px;background:var(--syf-yellow);border-radius:50%}
+h1{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin-bottom:10px}
+h1 .y{color:var(--syf-yellow)}
+.hero p{font-size:14.5px;color:var(--dim);max-width:88ch}
+.hero .meta{margin-top:14px;display:flex;flex-wrap:wrap;gap:18px;font-family:var(--font-mono);font-size:10.5px;color:var(--faint);letter-spacing:.06em}
+.hero .meta b{color:var(--ink);font-weight:500}
+
+section{margin-top:36px}
+h2{font-size:22px;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+h2 .num{font-family:var(--font-mono);font-size:11px;color:var(--syf-yellow);background:var(--syf-yellow-soft);padding:3px 9px;border-radius:5px;letter-spacing:.08em;border:1px solid rgba(255,206,50,.3)}
+h3{font-size:14px;font-weight:600;margin:18px 0 8px;color:var(--ink)}
+p{font-size:14px;color:var(--dim);max-width:92ch;margin-bottom:10px}
+p.intro{font-size:14.5px;color:var(--dim);max-width:92ch;margin-top:6px}
+code{font-family:var(--font-mono);background:var(--panel2);padding:1px 6px;border-radius:3px;color:var(--syf-yellow);font-size:12px}
+
+/* paths grid */
+.paths-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px}
+@media(max-width:1100px){.paths-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.paths-grid{grid-template-columns:1fr}}
+.path-tile{padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--panel)}
+.path-tile .lbl{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;font-weight:700}
+.path-tile.a .lbl{color:var(--success)}
+.path-tile.b .lbl{color:var(--syf-yellow)}
+.path-tile.c .lbl{color:var(--pilot)}
+.path-tile.d .lbl{color:var(--warning)}
+.path-tile.e .lbl{color:var(--dim)}
+.path-tile .nm{font-weight:600;color:var(--ink);font-size:13px;margin-bottom:5px;line-height:1.3}
+.path-tile .d{font-size:11.5px;color:var(--dim);line-height:1.5}
+
+/* path section */
+.path-section{margin-top:26px;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:22px;border-left:4px solid}
+.path-section.a{border-left-color:var(--success)}
+.path-section.b{border-left-color:var(--syf-yellow)}
+.path-section.c{border-left-color:var(--pilot)}
+.path-section.d{border-left-color:var(--warning)}
+.path-section.e{border-left-color:var(--dim)}
+.ps-head{display:flex;align-items:baseline;gap:12px;margin-bottom:10px}
+.ps-head .badge{font-family:var(--font-mono);font-size:11px;font-weight:700;padding:4px 10px;border-radius:5px;letter-spacing:.08em}
+.path-section.a .ps-head .badge{background:rgba(127,217,155,.1);color:var(--success);border:1px solid rgba(127,217,155,.4)}
+.path-section.b .ps-head .badge{background:rgba(255,206,50,.1);color:var(--syf-yellow);border:1px solid rgba(255,206,50,.4)}
+.path-section.c .ps-head .badge{background:rgba(91,143,199,.1);color:var(--pilot);border:1px solid rgba(91,143,199,.4)}
+.path-section.d .ps-head .badge{background:rgba(255,180,84,.1);color:var(--warning);border:1px solid rgba(255,180,84,.4)}
+.path-section.e .ps-head .badge{background:rgba(157,169,184,.1);color:var(--dim);border:1px solid var(--border-bright)}
+.ps-head .h{font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.ps-sub{font-size:13.5px;color:var(--dim);margin-bottom:12px;line-height:1.55}
+
+/* what's real/mocked table per path */
+.composition{margin-top:10px;background:var(--panel2);border-radius:8px;overflow:hidden}
+.composition table{width:100%;border-collapse:collapse;font-size:12px}
+.composition th{background:var(--panel3);padding:8px 12px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--syf-yellow);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.composition td{padding:7px 12px;border-bottom:1px solid var(--border);color:var(--dim);font-size:11.5px}
+.composition td:first-child{color:var(--ink);font-weight:500;width:30%}
+.composition tr:last-child td{border-bottom:0}
+
+.tag{display:inline-block;font-family:var(--font-mono);font-size:9.5px;padding:1px 6px;border-radius:3px;letter-spacing:.04em;margin-right:4px}
+.tag.real{background:rgba(127,217,155,.15);color:var(--success);border:1px solid rgba(127,217,155,.4)}
+.tag.mock{background:rgba(255,206,50,.1);color:var(--syf-yellow);border:1px solid rgba(255,206,50,.3)}
+.tag.sim{background:rgba(91,143,199,.1);color:var(--pilot);border:1px solid rgba(91,143,199,.3)}
+.tag.skip{background:rgba(157,169,184,.08);color:var(--dim);border:1px dashed var(--border-bright)}
+
+.tradeoffs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+@media(max-width:700px){.tradeoffs{grid-template-columns:1fr}}
+.trade-side{padding:11px 14px;border-radius:6px;font-size:12.5px;line-height:1.55}
+.trade-side.pros{background:rgba(127,217,155,.05);border:1px solid rgba(127,217,155,.25)}
+.trade-side.cons{background:rgba(255,107,107,.05);border:1px solid rgba(255,107,107,.25)}
+.trade-side .lab{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;font-weight:700}
+.trade-side.pros .lab{color:var(--success)}
+.trade-side.cons .lab{color:var(--danger)}
+.trade-side ul{list-style:none}
+.trade-side li{padding:2px 0 2px 14px;position:relative;color:var(--dim);font-size:12px}
+.trade-side li b{color:var(--ink);font-weight:500}
+.trade-side.pros li::before{content:"✓";position:absolute;left:0;color:var(--success);font-weight:700}
+.trade-side.cons li::before{content:"✗";position:absolute;left:0;color:var(--danger);font-weight:700}
+
+.when{margin-top:12px;padding:10px 14px;background:var(--syf-yellow-soft);border-left:3px solid var(--syf-yellow);border-radius:0 6px 6px 0;font-size:12.5px;color:var(--ink);line-height:1.55}
+.when b{color:var(--syf-yellow);font-weight:600}
+
+/* Path B special deep dive */
+.b-deep{margin-top:14px}
+.b-deep h3{font-family:var(--font-mono);font-size:11px;color:var(--syf-yellow);letter-spacing:.08em;text-transform:uppercase;margin:14px 0 6px;font-weight:700}
+.free-prem{margin-top:10px}
+.free-prem table{width:100%;border-collapse:collapse;font-size:12px;background:var(--panel2);border-radius:8px;overflow:hidden}
+.free-prem th{background:var(--panel3);padding:9px 12px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--syf-yellow);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.free-prem td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--dim);font-size:11.5px;line-height:1.5}
+.free-prem td:first-child{color:var(--ink);font-weight:500}
+.free-prem tr:last-child td{border-bottom:0}
+.cell-free{color:var(--success);font-family:var(--font-mono);font-size:11px;font-weight:600}
+.cell-prem{color:var(--danger);font-family:var(--font-mono);font-size:11px;font-weight:600}
+
+.flow-box{margin-top:12px;padding:14px 16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;font-family:var(--font-mono);font-size:11.5px;line-height:1.8;color:var(--dim)}
+.flow-box .step{display:flex;gap:10px;padding:3px 0}
+.flow-box .step .n{color:var(--syf-yellow);font-weight:700;flex-shrink:0;width:22px}
+.flow-box .step .what{color:var(--dim)}
+.flow-box .step .what b{color:var(--ink);font-weight:500}
+.flow-box .step .what code{font-size:10.5px;color:var(--syf-yellow)}
+
+/* comparison matrix */
+.matrix-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);background:var(--panel);margin-top:18px}
+table.matrix{width:100%;border-collapse:collapse;min-width:900px;font-size:12px}
+table.matrix thead th{padding:12px;text-align:left;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--border);font-weight:600;background:var(--panel2)}
+table.matrix thead th:first-child{color:var(--dim)}
+table.matrix thead th.a{color:var(--success)}
+table.matrix thead th.b{color:var(--syf-yellow)}
+table.matrix thead th.c{color:var(--pilot)}
+table.matrix thead th.d{color:var(--warning)}
+table.matrix thead th.e{color:var(--dim)}
+table.matrix tbody td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:11.5px;color:var(--dim);vertical-align:top}
+table.matrix tbody td:first-child{color:var(--ink);font-weight:500;font-size:12px}
+table.matrix tbody tr:hover td{background:rgba(255,206,50,.03)}
+.mark-y{color:var(--success);font-family:var(--font-mono);font-weight:600}
+.mark-n{color:var(--danger);font-family:var(--font-mono);font-weight:600}
+.mark-p{color:var(--warning);font-family:var(--font-mono);font-weight:600;font-size:10.5px}
+.mark-s{color:var(--syf-yellow);font-family:var(--font-mono);font-weight:600;font-size:10.5px}
+.score{display:inline-block;width:60px;text-align:center;padding:2px 6px;border-radius:3px;font-family:var(--font-mono);font-size:10.5px;font-weight:700;letter-spacing:.04em}
+.score.hi{background:rgba(127,217,155,.15);color:var(--success);border:1px solid rgba(127,217,155,.4)}
+.score.md{background:rgba(255,180,84,.1);color:var(--warning);border:1px solid rgba(255,180,84,.4)}
+.score.lo{background:rgba(255,107,107,.08);color:var(--danger);border:1px solid rgba(255,107,107,.4)}
+.score.na{background:rgba(157,169,184,.08);color:var(--dim);border:1px dashed var(--border-bright)}
+
+/* recommendation */
+.rec{margin-top:18px;padding:20px 22px;background:linear-gradient(135deg,var(--syf-yellow-soft),transparent);border:1px solid rgba(255,206,50,.3);border-radius:12px}
+.rec .h-r{font-family:var(--font-mono);font-size:11px;color:var(--syf-yellow);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;font-weight:700}
+.rec .body-r{font-size:15px;color:var(--ink);line-height:1.55;font-weight:500}
+.rec .body-r b{color:var(--syf-yellow)}
+.rec .body-r code{font-size:13px;color:var(--ink);background:var(--syf-black)}
+
+.callout{margin:14px 0;padding:14px 18px;background:var(--syf-yellow-soft);border-left:3px solid var(--syf-yellow);border-radius:0 6px 6px 0;font-size:13px;color:var(--ink);line-height:1.6}
+.callout b{color:var(--syf-yellow)}
+.callout code{font-size:11.5px;color:var(--ink);background:var(--syf-black)}
+
+.note{margin:12px 0;padding:10px 14px;background:var(--panel2);border:1px dashed var(--border-bright);border-radius:6px;font-size:12px;color:var(--dim);line-height:1.55}
+.note b{color:var(--ink)}
+
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.toc a{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;color:var(--dim);background:var(--panel2);border:1px solid var(--border);padding:6px 10px;border-radius:5px;text-decoration:none;text-transform:uppercase}
+.toc a:hover{border-color:var(--syf-yellow);color:var(--syf-yellow)}
+
+.footer{margin-top:60px;padding-top:24px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:10.5px;color:var(--faint);letter-spacing:.06em;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.footer b{color:var(--syf-yellow)}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="hero">
+    <div class="team-line"><span class="dot"></span>TEAM AI PULSE · STRATEGY DOC v2</div>
+    <h1>Five paths to ship <span class="y">ReleasePilot + ReleaseWatch</span></h1>
+    <p>One workflow, five ways to build it. Each path makes different trade-offs between architectural credibility, demo reliability, visual fidelity, and the network reality of a SYF laptop. The decision is which one to build for Monday — and which one to keep as a hot fallback.</p>
+    <div class="meta">
+      <span><b>Participants</b> · Vamshi V · Anisha C · Sai Mohit</span>
+      <span><b>Build window</b> · Mon June 8 · 10:00 AM ET</span>
+      <span><b>Submission</b> · Tue June 9 · 09:15 AM ET</span>
+    </div>
+    <div class="toc">
+      <a href="#paths">▸ The 5 paths</a>
+      <a href="#path-a">▸ Path A</a>
+      <a href="#path-b">▸ Path B · deep dive</a>
+      <a href="#path-c">▸ Path C</a>
+      <a href="#path-d">▸ Path D</a>
+      <a href="#path-e">▸ Path E</a>
+      <a href="#matrix">▸ Comparison</a>
+      <a href="#rec">▸ Recommendation</a>
+    </div>
+  </div>
+
+  <section id="paths">
+    <h2><span class="num">01</span> The five paths at a glance</h2>
+    <p class="intro">Read these like a menu. Each path is a complete answer to "how do we ship this." The deep treatment of each follows below.</p>
+    <div class="paths-grid">
+      <div class="path-tile a"><div class="lbl">▸ Path A</div><div class="nm">Real Production</div><div class="d">Bedrock + Apigee + real APIs. Not buildable in 2 days — this is the pitch slide that shows the architecture story.</div></div>
+      <div class="path-tile b"><div class="lbl">▸ Path B</div><div class="nm">Real Free Connections</div><div class="d">Real Jira trigger via free webhook → real Studio LLM → real SharePoint/Teams/Outlook. Confluence/SNOW/Bitbucket simulated on SharePoint.</div></div>
+      <div class="path-tile c"><div class="lbl">▸ Path C</div><div class="nm">Studio + Mock Data</div><div class="d">Studio is the brain. SharePoint is the world. No Jira/Bitbucket integration. Cleaner than B, loses the real Jira event moment.</div></div>
+      <div class="path-tile d"><div class="lbl">▸ Path D</div><div class="nm">Local App + Minimal LLM</div><div class="d">Pretty local React app for all UIs. One Studio screen-share moment at L3 RCA to prove the LLM exists. Otherwise scripted.</div></div>
+      <div class="path-tile e"><div class="lbl">▸ Path E</div><div class="nm">Pure Mock + Architecture Story</div><div class="d">Beautiful local app. Zero LLM. Production architecture diagram at the end. Honest about being a simulation.</div></div>
+    </div>
+
+    <div class="callout">
+      <b>The asymmetry that shapes every path:</b> Atlassian (Jira/Confluence/Bitbucket) can push events into M365 for free via webhooks, emails, web requests. M365 cannot pull from Atlassian without Power Automate Premium. M365 can talk to itself (Teams ↔ SharePoint ↔ Outlook ↔ Studio) freely. This means: any path that includes a "real" trigger from Atlassian works on free tooling. Any path that needs the agent to query Atlassian back does not.
+    </div>
+  </section>
+
+  <!-- ============= PATH A ============= -->
+  <section id="path-a">
+    <h2><span class="num">02</span> Path A · Real Production</h2>
+    <div class="path-section a">
+      <div class="ps-head"><span class="badge">PATH A</span><span class="h">How it would actually run at SYF</span></div>
+      <p class="ps-sub">This is not buildable in the hackathon — it requires Apigee provisioning, Bedrock access, service catalog integration, and approval to call internal APIs. It exists as a slide in the deck (Slide 14) to anchor the pitch in reality and show the path from prototype to prod.</p>
+
+      <div class="composition">
+        <table>
+          <thead><tr><th>Component</th><th>What it is in prod</th></tr></thead>
+          <tbody>
+            <tr><td>LLM</td><td><span class="tag real">REAL</span> AWS Bedrock (Claude / Titan) accessed via Apigee</td></tr>
+            <tr><td>Trigger</td><td><span class="tag real">REAL</span> Jira automation rule fires webhook to internal endpoint via Apigee</td></tr>
+            <tr><td>Jira</td><td><span class="tag real">REAL</span> Atlassian Cloud Enterprise · Jira REST API via Apigee</td></tr>
+            <tr><td>Confluence</td><td><span class="tag real">REAL</span> Atlassian Cloud · Confluence REST API via Apigee</td></tr>
+            <tr><td>ServiceNow</td><td><span class="tag real">REAL</span> SNOW REST API via Apigee for CHG and INC operations</td></tr>
+            <tr><td>Bitbucket</td><td><span class="tag real">REAL</span> Bitbucket REST API via Apigee for PR diffs</td></tr>
+            <tr><td>Splunk + New Relic</td><td><span class="tag real">REAL</span> SPL and NRQL queries via Apigee for log/metric data</td></tr>
+            <tr><td>Teams + Outlook</td><td><span class="tag real">REAL</span> Microsoft Graph API via Apigee for Adaptive Cards and emails</td></tr>
+            <tr><td>Service Catalog</td><td><span class="tag real">REAL</span> SYF service catalog for downstream app dependency resolution</td></tr>
+            <tr><td>Agent host</td><td><span class="tag real">REAL</span> Spring Boot service on PCF, orchestrating all of the above</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="when"><b>When you use this path:</b> only in the pitch. Slide 14 of Deck 1 shows this architecture. Talk about it; don't build it.</div>
+    </div>
+  </section>
+
+  <!-- ============= PATH B ============= -->
+  <section id="path-b">
+    <h2><span class="num">03</span> Path B · Real free connections (the most interesting path)</h2>
+    <div class="path-section b">
+      <div class="ps-head"><span class="badge">PATH B</span><span class="h">Real Jira trigger · real Studio · real Teams/Outlook · SharePoint simulates the rest</span></div>
+      <p class="ps-sub">Use only free tooling. Real Atlassian pushes real events into M365 via webhooks. Studio reasons. M365 surfaces (Teams, Outlook, SharePoint) carry out the agent's actions for real. The agent never has to "reach into" Atlassian — which is exactly the free tier's constraint, and it's fine because the demo is one-shot from Jira to closure.</p>
+
+      <div class="b-deep">
+
+        <h3>▸ Free vs Premium · what blocks Path B</h3>
+        <div class="free-prem">
+          <table>
+            <thead><tr><th>Capability</th><th>Status</th><th>Note</th></tr></thead>
+            <tbody>
+              <tr><td>Jira Automation "Send web request"</td><td class="cell-free">FREE</td><td>POST to any URL. Works on Jira Cloud Free tier (100 executions/month).</td></tr>
+              <tr><td>Jira Automation "Send email"</td><td class="cell-free">FREE</td><td>Sends email to any address. Receiver can be an M365 mailbox.</td></tr>
+              <tr><td>Jira webhooks (admin)</td><td class="cell-free">FREE</td><td>Issue created/updated/commented events. POST to any URL.</td></tr>
+              <tr><td>Teams Incoming Webhook (channel)</td><td class="cell-free">FREE</td><td>Receives POST from anywhere. Posts as a message in a Teams channel.</td></tr>
+              <tr><td>Power Automate "When new email arrives"</td><td class="cell-free">FREE</td><td>Standard connector. Triggers on inbound email.</td></tr>
+              <tr><td>Power Automate "When item created in SharePoint"</td><td class="cell-free">FREE</td><td>Standard connector.</td></tr>
+              <tr><td>Power Automate Teams actions</td><td class="cell-free">FREE</td><td>Post message, Post Adaptive Card and wait for response, Get messages — all standard.</td></tr>
+              <tr><td>Power Automate Outlook actions</td><td class="cell-free">FREE</td><td>Send email, read mailbox — standard.</td></tr>
+              <tr><td>Power Automate SharePoint actions</td><td class="cell-free">FREE</td><td>Create/update/delete list items, pages, files — standard.</td></tr>
+              <tr><td>Copilot Studio agent in Teams</td><td class="cell-free">FREE*</td><td>Publishing to Teams is built-in. *Studio itself has per-message credits — bring own tenant or use hackathon-provided credits.</td></tr>
+              <tr><td>Studio's "Generative answers" / LLM topic</td><td class="cell-free">FREE*</td><td>Built into Studio. *Subject to Studio message credits.</td></tr>
+              <tr><td>Power Automate "HTTP" action (generic)</td><td class="cell-prem">PREMIUM</td><td>Required to call any external REST API. <b>This is the blocker.</b></td></tr>
+              <tr><td>Power Automate Jira / Confluence / ServiceNow connectors</td><td class="cell-prem">PREMIUM</td><td>All premium. So Studio cannot query these directly.</td></tr>
+              <tr><td>Power Automate Custom Connector</td><td class="cell-prem">PREMIUM</td><td>Can't build a custom connector on free tier.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>▸ The Path B workflow · end to end · all free</h3>
+        <div class="flow-box">
+          <div class="step"><span class="n">1</span><span class="what">Vamshi closes release story in <b>real Jira</b> (his personal Atlassian Cloud Free).</span></div>
+          <div class="step"><span class="n">2</span><span class="what">Vamshi comments <code>@release-pilot go</code> on the story.</span></div>
+          <div class="step"><span class="n">3</span><span class="what">Jira Automation rule fires (free). Action: <b>Send web request</b> POST to <code>Teams Incoming Webhook URL</code> with payload containing story details.</span></div>
+          <div class="step"><span class="n">4</span><span class="what"><b>Real Teams channel</b> receives the message with story details.</span></div>
+          <div class="step"><span class="n">5</span><span class="what">Power Automate flow (free, "When message posted in channel" trigger) fires. Parses story details from the message.</span></div>
+          <div class="step"><span class="n">6</span><span class="what">Flow calls <b>Copilot Studio agent</b> with the story context (Studio agent published to same Teams channel). Studio reasons over the context using its built-in LLM.</span></div>
+          <div class="step"><span class="n">7</span><span class="what">Studio reads pre-seeded SharePoint list of past INCs · synthesizes <b>risk packet</b> using LLM. Writes risk packet as a <b>real SharePoint page</b> styled as a Confluence release page.</span></div>
+          <div class="step"><span class="n">8</span><span class="what">Studio posts <b>real Adaptive Card</b> to Teams channel asking for approval. Human (Vamshi or teammate) clicks Approve.</span></div>
+          <div class="step"><span class="n">9</span><span class="what">Studio updates <b>real SharePoint list</b> (representing the SNOW CHG) · advances state from Assess to Implement.</span></div>
+          <div class="step"><span class="n">10</span><span class="what">Studio sends <b>real Outlook email</b> to test DL with CHG notification.</span></div>
+          <div class="step"><span class="n">11</span><span class="what">Studio posts status back to Teams channel: "CHG ready for deploy. Posting back to original Jira issue would happen in prod via API."</span></div>
+          <div class="step"><span class="n">12</span><span class="what"><b>Deploy trigger:</b> Bitbucket webhook (free) on PR merge OR manual trigger via SharePoint list update OR user message in Teams.</span></div>
+          <div class="step"><span class="n">13</span><span class="what">Studio (ReleaseWatch agent) starts L1 hourly reports. Posts to Teams every hour with "all clear" or escalation.</span></div>
+          <div class="step"><span class="n">14</span><span class="what">L2 drift: Studio reads pre-seeded SharePoint list of "current metrics" vs "yesterday metrics" · reasons over delta · classifies as explained/unexplained · posts amber alert.</span></div>
+          <div class="step"><span class="n">15</span><span class="what">L3 RCA: Studio reads pre-seeded SharePoint lists for past INCs, RabbitMQ metrics, Bitbucket diff · synthesizes RCA with confidence score · creates SharePoint list row representing INC · posts <b>real Teams Adaptive Card</b> with RCA.</span></div>
+          <div class="step"><span class="n">16</span><span class="what">Human acknowledges in Teams. Studio adjusts cadence, watches for recovery, posts all-clear when metrics improve.</span></div>
+        </div>
+
+        <h3>▸ What's real, what's mocked, what's simulated</h3>
+        <div class="composition">
+          <table>
+            <thead><tr><th>Component</th><th>Path B implementation</th></tr></thead>
+            <tbody>
+              <tr><td>LLM</td><td><span class="tag real">REAL</span> Copilot Studio built-in generative answers</td></tr>
+              <tr><td>Trigger</td><td><span class="tag real">REAL</span> Real Jira comment fires real automation rule via free webhook</td></tr>
+              <tr><td>Jira</td><td><span class="tag real">REAL</span> Vamshi's personal Atlassian Cloud Free (push-only into M365)</td></tr>
+              <tr><td>Confluence release page</td><td><span class="tag sim">SIMULATED</span> SharePoint page styled as Confluence. Real artifact, just rendered in SharePoint not Confluence.</td></tr>
+              <tr><td>ServiceNow CHG / INC</td><td><span class="tag sim">SIMULATED</span> SharePoint list with state column. Real list, simulating SNOW.</td></tr>
+              <tr><td>Bitbucket diff data</td><td><span class="tag mock">PRE-SEEDED</span> Diff content pre-populated in SharePoint. Real Bitbucket repo shown to jury as context only.</td></tr>
+              <tr><td>Past INCs database</td><td><span class="tag mock">PRE-SEEDED</span> SharePoint list with 3 pre-populated INC records.</td></tr>
+              <tr><td>Splunk + New Relic metrics</td><td><span class="tag mock">PRE-SEEDED</span> SharePoint lists with time-series snapshots that Studio reads.</td></tr>
+              <tr><td>Teams Adaptive Cards</td><td><span class="tag real">REAL</span> Posted by Studio to real Teams channel. Real human interaction.</td></tr>
+              <tr><td>Outlook emails</td><td><span class="tag real">REAL</span> Sent by Studio via Outlook connector to test DL.</td></tr>
+              <tr><td>Deploy trigger</td><td><span class="tag real">REAL</span> if Bitbucket webhook on PR merge. <span class="tag mock">MANUAL</span> as fallback.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tradeoffs">
+          <div class="trade-side pros"><div class="lab">Pros</div><ul>
+            <li><b>Real Jira event wakes the agent.</b> The most credible moment in any demo.</li>
+            <li><b>Real LLM reasoning</b> visible in Teams thread — not narrated, not faked.</li>
+            <li><b>Real human-in-the-loop</b> via real Adaptive Cards. Approval gates land.</li>
+            <li><b>Real emails go out</b> — judges see the inbox notification land.</li>
+            <li><b>Architectural credibility very high</b> — only thing missing vs prod is the API gateway.</li>
+            <li>Builds the discipline of pushing data into M365 — which is a transferable pattern.</li>
+          </ul></div>
+          <div class="trade-side cons"><div class="lab">Cons</div><ul>
+            <li>Setup-heavy: Jira account, automation rule, Teams channel, SharePoint lists, Studio agent — all to wire up Monday morning.</li>
+            <li>Visual fidelity: SharePoint pages don't look like Confluence pages out of the box. Need CSS injection or accept a less polished look.</li>
+            <li>Many moving pieces — any one of which can break in the live demo.</li>
+            <li>Bitbucket integration is partial — webhook in works, but the diff data has to be pre-seeded for Studio to "read."</li>
+            <li>Depends on Studio credits availability on Monday.</li>
+          </ul></div>
+        </div>
+
+        <div class="when"><b>When you use this path:</b> if Monday's checks pass on Studio access + Teams connector + reasonable credits AND your team has the appetite to wire ~6 free integrations in an afternoon. This is the demo that <b>wins on architectural credibility.</b></div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============= PATH C ============= -->
+  <section id="path-c">
+    <h2><span class="num">04</span> Path C · Studio + Mock Data (no Jira integration)</h2>
+    <div class="path-section c">
+      <div class="ps-head"><span class="badge">PATH C</span><span class="h">Studio reasons over SharePoint-stored mock data · all triggers in Teams</span></div>
+      <p class="ps-sub">A simpler version of Path B. No Jira webhook, no Atlassian wiring. The demo starts when you chat with the Studio agent in Teams. The agent does everything Path B does, but the trigger is a Teams message instead of a Jira comment. SharePoint is the world.</p>
+
+      <div class="composition">
+        <table>
+          <thead><tr><th>Component</th><th>Path C implementation</th></tr></thead>
+          <tbody>
+            <tr><td>LLM</td><td><span class="tag real">REAL</span> Copilot Studio</td></tr>
+            <tr><td>Trigger</td><td><span class="tag mock">MANUAL</span> User types message in Teams to start the agent</td></tr>
+            <tr><td>"Jira issue"</td><td><span class="tag sim">SIMULATED</span> SharePoint list pre-populated with the release story</td></tr>
+            <tr><td>Confluence release page</td><td><span class="tag sim">SIMULATED</span> SharePoint page</td></tr>
+            <tr><td>SNOW CHG / INC</td><td><span class="tag sim">SIMULATED</span> SharePoint list</td></tr>
+            <tr><td>All data sources</td><td><span class="tag mock">PRE-SEEDED</span> SharePoint lists for past INCs, metrics, diffs</td></tr>
+            <tr><td>Teams Adaptive Cards</td><td><span class="tag real">REAL</span></td></tr>
+            <tr><td>Outlook emails</td><td><span class="tag real">REAL</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tradeoffs">
+        <div class="trade-side pros"><div class="lab">Pros</div><ul>
+          <li>Fewer moving pieces than Path B — no Jira/Bitbucket wiring.</li>
+          <li>Real LLM, real Teams cards, real emails.</li>
+          <li>Faster to build Monday morning.</li>
+          <li>More reliable than Path B because fewer external dependencies.</li>
+        </ul></div>
+        <div class="trade-side cons"><div class="lab">Cons</div><ul>
+          <li><b>Loses the "real Jira event woke the agent" moment</b> — the most viscerally credible part.</li>
+          <li>Pitch has to lean harder on "imagine this came from Jira" narrative.</li>
+          <li>Same SharePoint visual fidelity issue as Path B.</li>
+        </ul></div>
+      </div>
+
+      <div class="when"><b>When you use this path:</b> if Monday checks pass on Studio but Path B's wiring complexity feels risky. Or if you want to maximize Studio reasoning time and minimize setup time.</div>
+    </div>
+  </section>
+
+  <!-- ============= PATH D ============= -->
+  <section id="path-d">
+    <h2><span class="num">05</span> Path D · Local App + Minimal LLM</h2>
+    <div class="path-section d">
+      <div class="ps-head"><span class="badge">PATH D</span><span class="h">Pretty local React app + Studio screen-share at the L3 moment</span></div>
+      <p class="ps-sub">Build the vibe-coded local app (Jira / Confluence / SNOW / Teams / Dashboard) for visual fidelity. Run it on localhost. At the L3 RCA moment, switch tabs to Studio (a separate browser tab) and run the actual RCA prompt live to prove the LLM exists. No real connection — just two surfaces shown in sequence.</p>
+
+      <div class="composition">
+        <table>
+          <thead><tr><th>Component</th><th>Path D implementation</th></tr></thead>
+          <tbody>
+            <tr><td>LLM</td><td><span class="tag real">REAL</span> Copilot Studio · shown via screen-share for L3 RCA only</td></tr>
+            <tr><td>Trigger</td><td><span class="tag mock">SCRIPTED</span> Type comment in mock Jira UI</td></tr>
+            <tr><td>All UIs</td><td><span class="tag mock">MOCKED</span> Vibe-coded React, polished visuals</td></tr>
+            <tr><td>All actions</td><td><span class="tag mock">SCRIPTED</span> State machine in React</td></tr>
+            <tr><td>Reasoning streams</td><td><span class="tag mock">SCRIPTED</span> Pre-written, stream into UI</td></tr>
+            <tr><td>L3 RCA generation</td><td><span class="tag real">REAL</span> Switch to Studio tab · run prompt live · narrate</td></tr>
+            <tr><td>Connection between app and Studio</td><td><span class="tag skip">NONE</span> Demonstrator narrates the bridge</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tradeoffs">
+        <div class="trade-side pros"><div class="lab">Pros</div><ul>
+          <li>Highest visual fidelity. Pretty Jira, pretty Confluence, pretty SNOW, pretty Dashboard.</li>
+          <li>Demo flow is exactly Mock 1 you already approved.</li>
+          <li>One real LLM moment is enough to answer "where's the AI?"</li>
+          <li>Local app has zero network dependencies. Reliable.</li>
+        </ul></div>
+        <div class="trade-side cons"><div class="lab">Cons</div><ul>
+          <li><b>The bridge between app and Studio is narration, not connection.</b> Sharper judges will notice.</li>
+          <li>Architecturally weaker than B or C — looks more like a demo than a system.</li>
+          <li>Switching tabs mid-demo can break the visual flow.</li>
+        </ul></div>
+      </div>
+
+      <div class="when"><b>When you use this path:</b> if Monday checks pass on Studio basic LLM but NOT on Teams/SharePoint connectors. You can still prove the AI exists without wiring real connections.</div>
+    </div>
+  </section>
+
+  <!-- ============= PATH E ============= -->
+  <section id="path-e">
+    <h2><span class="num">06</span> Path E · Pure Mock + Architecture Story</h2>
+    <div class="path-section e">
+      <div class="ps-head"><span class="badge">PATH E</span><span class="h">Beautiful local app · zero LLM · honest architecture diagram at the end</span></div>
+      <p class="ps-sub">Build the local app. Run the demo entirely from scripted state. At the end of the pitch, show the production architecture diagram and explain "this is where AI plugs in. Today, we don't have access to that in our hackathon environment. In prod, this becomes Bedrock or Studio reasoning." The honest, maximally-reliable choice.</p>
+
+      <div class="composition">
+        <table>
+          <thead><tr><th>Component</th><th>Path E implementation</th></tr></thead>
+          <tbody>
+            <tr><td>LLM</td><td><span class="tag skip">NONE</span> Explained as future plug-in point</td></tr>
+            <tr><td>All UIs</td><td><span class="tag mock">MOCKED</span> Vibe-coded React, polished visuals</td></tr>
+            <tr><td>All actions</td><td><span class="tag mock">SCRIPTED</span> State machine in React</td></tr>
+            <tr><td>"Reasoning"</td><td><span class="tag mock">SCRIPTED</span> Pre-written text streams that look like LLM output</td></tr>
+            <tr><td>Architecture story</td><td><span class="tag real">REAL</span> Pitch slide 14 shows where AI plugs in for prod</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tradeoffs">
+        <div class="trade-side pros"><div class="lab">Pros</div><ul>
+          <li><b>Maximum reliability.</b> Zero external dependencies. Demo works in any room.</li>
+          <li>Fastest to build — no Studio setup at all.</li>
+          <li>Demo visual quality is as high as you can make it.</li>
+          <li>Honesty is disarming — judges respect "we know this is mocked; here's where AI fits."</li>
+        </ul></div>
+        <div class="trade-side cons"><div class="lab">Cons</div><ul>
+          <li><b>"Where's the AI?"</b> is the hardest question, and the answer is "in the next slide."</li>
+          <li>Weakest path on architectural credibility for an "agentic AI hackathon."</li>
+          <li>Risks being scored down for not using the LLM tools the hackathon explicitly provides.</li>
+        </ul></div>
+      </div>
+
+      <div class="when"><b>When you use this path:</b> as the floor. Build Path E first. Layer Path B, C, or D on top if Monday's checks pass. If everything else fails, you ship Path E and it still works.</div>
+    </div>
+  </section>
+
+  <!-- ============= MATRIX ============= -->
+  <section id="matrix">
+    <h2><span class="num">07</span> Comparison · pick your path</h2>
+    <p class="intro">Each path scored across the dimensions that matter for the hackathon.</p>
+    <div class="matrix-wrap">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="a">▸ Path A · Prod</th>
+            <th class="b">▸ Path B · Real Free</th>
+            <th class="c">▸ Path C · Studio + Mock</th>
+            <th class="d">▸ Path D · App + LLM</th>
+            <th class="e">▸ Path E · Pure Mock</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Buildable in 2 days</td><td><span class="mark-n">NO</span></td><td><span class="mark-y">YES (tight)</span></td><td><span class="mark-y">YES</span></td><td><span class="mark-y">YES</span></td><td><span class="mark-y">YES</span></td></tr>
+          <tr><td>Real Jira trigger</td><td><span class="mark-y">YES</span></td><td><span class="mark-y">YES</span></td><td><span class="mark-n">NO</span></td><td><span class="mark-n">NO</span></td><td><span class="mark-n">NO</span></td></tr>
+          <tr><td>Real LLM reasoning</td><td><span class="mark-y">YES (Bedrock)</span></td><td><span class="mark-y">YES (Studio)</span></td><td><span class="mark-y">YES (Studio)</span></td><td><span class="mark-p">PARTIAL</span></td><td><span class="mark-n">NO</span></td></tr>
+          <tr><td>Real Teams Adaptive Cards</td><td><span class="mark-y">YES</span></td><td><span class="mark-y">YES</span></td><td><span class="mark-y">YES</span></td><td><span class="mark-n">NO</span></td><td><span class="mark-n">NO</span></td></tr>
+          <tr><td>Real Outlook emails</td><td><span class="mark-y">YES</span></td><td><span class="mark-y">YES</span></td><td><span class="mark-y">YES</span></td><td><span class="mark-n">NO</span></td><td><span class="mark-n">NO</span></td></tr>
+          <tr><td>Real Confluence page</td><td><span class="mark-y">YES</span></td><td><span class="mark-s">SHAREPOINT</span></td><td><span class="mark-s">SHAREPOINT</span></td><td><span class="mark-n">MOCKED</span></td><td><span class="mark-n">MOCKED</span></td></tr>
+          <tr><td>Real SNOW</td><td><span class="mark-y">YES</span></td><td><span class="mark-s">SHAREPOINT</span></td><td><span class="mark-s">SHAREPOINT</span></td><td><span class="mark-n">MOCKED</span></td><td><span class="mark-n">MOCKED</span></td></tr>
+          <tr><td>Real Bitbucket diff</td><td><span class="mark-y">YES</span></td><td><span class="mark-p">SEEDED</span></td><td><span class="mark-n">SEEDED</span></td><td><span class="mark-n">MOCKED</span></td><td><span class="mark-n">MOCKED</span></td></tr>
+          <tr><td>Visual fidelity</td><td><span class="score na">N/A</span></td><td><span class="score md">MED</span></td><td><span class="score md">MED</span></td><td><span class="score hi">HIGH</span></td><td><span class="score hi">HIGH</span></td></tr>
+          <tr><td>Reliability of demo</td><td><span class="score na">N/A</span></td><td><span class="score md">MED</span></td><td><span class="score hi">HIGH</span></td><td><span class="score hi">HIGH</span></td><td><span class="score hi">HIGH</span></td></tr>
+          <tr><td>Architectural credibility</td><td><span class="score hi">VHIGH</span></td><td><span class="score hi">HIGH</span></td><td><span class="score md">MED+</span></td><td><span class="score md">MED</span></td><td><span class="score lo">LOW</span></td></tr>
+          <tr><td>"Where's the AI?" answer strength</td><td><span class="score hi">STRONG</span></td><td><span class="score hi">STRONG</span></td><td><span class="score hi">STRONG</span></td><td><span class="score md">OK</span></td><td><span class="score lo">WEAK</span></td></tr>
+          <tr><td>Setup complexity Monday AM</td><td><span class="score na">N/A</span></td><td><span class="score lo">HIGH</span></td><td><span class="score md">MED</span></td><td><span class="score md">MED</span></td><td><span class="score hi">LOW</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============= RECOMMENDATION ============= -->
+  <section id="rec">
+    <h2><span class="num">08</span> Recommendation</h2>
+
+    <div class="rec">
+      <div class="h-r">▸ The play</div>
+      <div class="body-r">
+        Build <b>Path E</b> as the floor over the weekend (throwaway prep) so the team learns the mocks. <b>Monday morning, run the 6 checks. If they pass, layer Path B on top.</b> If they partially pass, fall back to Path C. If they fail entirely, ship Path E and use Slide 14 to tell the architecture story honestly.
+      </div>
+    </div>
+
+    <div class="callout">
+      <b>Why this play:</b> Path B is the most impressive thing buildable, but you can't commit to it before knowing Monday's tenant capabilities. Path E is always achievable. The two are not competitors — they're floor and ceiling. Path E's polished mocks become the visual layer Path B doesn't have. Path B's real Studio reasoning becomes the AI proof Path E lacks. <b>Together, with a feature flag, they cover every Monday outcome.</b>
+    </div>
+
+    <h3>What to build this weekend</h3>
+    <ol style="color:var(--dim);font-size:13.5px;line-height:1.7;padding-left:22px;margin-top:8px">
+      <li><b>Throwaway local React app</b> covering all 5 mock UIs at Mock 1 fidelity. Vamshi leads, Anisha + Sai Mohit shadow.</li>
+      <li><b>Pre-seeded data files</b> — past INCs, metrics, bitbucket diff content, story details — drafted in JSON ready to drop into either React state (Path E) or SharePoint lists (Path B).</li>
+      <li><b>The L3 RCA master prompt</b> — drafted now, tested in Claude/ChatGPT this weekend, ready to paste into Studio Monday.</li>
+      <li><b>The Monday-morning playbook</b> — hour-by-hour build plan with team allocation.</li>
+      <li><b>The Jira automation rule template</b> — ready to paste into Jira Cloud on Monday morning to wire Path B's trigger fast.</li>
+      <li><b>The SharePoint list schemas</b> — column definitions for the 4-5 lists Path B needs.</li>
+    </ol>
+
+    <div class="note">
+      <b>Everything above is preparation, not building.</b> Per hackathon rules, the actual code, Studio configuration, and Power Automate flows must be created after the official start time. The prep work gives you the muscle memory; Monday is when you actually ship.
+    </div>
+  </section>
+
+  <div class="footer">
+    <div>AI Pulse · <b>Vamshi V · Anisha C · Sai Mohit</b> · ReleasePilot + ReleaseWatch</div>
+    <div>Strategy doc v2 · supersedes framework_strategy.html</div>
+  </div>
+
+</div>
+</body>
+</html>

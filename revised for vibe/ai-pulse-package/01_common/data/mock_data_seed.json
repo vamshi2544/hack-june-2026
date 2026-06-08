@@ -1,0 +1,373 @@
+{
+  "_meta": {
+    "purpose": "Universal mock data seed for AI Pulse demo. Becomes React state in the demo app. Drives every surface and the L3 RCA.",
+    "team": "AI Pulse",
+    "participants": ["Vamshi V", "Anisha C", "Sai Mohit"],
+    "demo_scenario": "application-consumer release included a required DB migration (subtask) that was forgotten. Deploy succeeds and HTTP health checks pass, but the RabbitMQ publisher fails to initialize against the missing schema and silently stops publishing to downstream consumers (sms-consumer first). A pure relationship failure, immediately post-deploy.",
+    "expected_l3_confidence": 0.84,
+    "mvp2_note": "The RabbitMQ memory-exhaustion-a-week-after-deploy pattern is explicitly OUT of scope for ReleaseWatch (which is release-window-scoped). It is the motivating example for MVP 2 'Production Watch' (continuous monitoring beyond the release window).",
+    "last_updated": "2026-06-07"
+  },
+
+  "releases": {
+    "comment": "Two releases in play. application-consumer is the hero (full Pilot->Watch, fails silently). credit-apply is the green contrast tile (deployed earlier, all clear).",
+    "hero": "application-consumer",
+    "contrast": "credit-apply"
+  },
+
+  "release_story": {
+    "issue_key": "ACQ-3847",
+    "summary": "Add per-consumer routing config for application-consumer fan-out",
+    "description": "application-consumer fans RabbitMQ messages out to sms-consumer, email-consumer, and audit-consumer. This release adds a per-consumer routing config so routing keys can be managed without redeploy. The change introduces a new messaging_config table and requires a DB migration to create it before the publisher can initialize.",
+    "issue_type": "Story",
+    "status": "Done",
+    "assignee": "Vamshi V",
+    "reporter": "Sanjay Kumar",
+    "fix_version": "2026.06.08",
+    "sprint": "Iteration 26.06.A",
+    "application": "application-consumer",
+    "components": ["application-consumer"],
+    "labels": ["release-candidate", "messaging", "db-migration"],
+    "risk_score": 72,
+    "risk_band": "Elevated",
+    "risk_rationale": "Touches the messaging publish path AND requires a DB migration. Past incidents on this app family cluster around messaging-init and migration-ordering failures. Migration-dependent releases are the highest-risk class for this service.",
+    "created": "2026-06-02T14:22:00Z",
+    "resolved": "2026-06-06T18:34:00Z"
+  },
+
+  "contrast_release": {
+    "comment": "credit-apply — the green contrast tile on the dashboard. Deployed earlier today, watched, all clear.",
+    "issue_key": "ACQ-3801",
+    "summary": "credit-apply update applicant payload validation",
+    "application": "credit-apply",
+    "fix_version": "2026.06.08",
+    "risk_score": 28,
+    "risk_band": "Low",
+    "risk_rationale": "Config-only validation change. No schema change, no messaging path change. One past INC on this app in 180 days, unrelated.",
+    "chg_id": "CHG0049180",
+    "watch_state": "L1_CLEAR",
+    "deployed_at": "2026-06-07T23:50:00Z",
+    "outcome": "all clear · 4h 22m"
+  },
+
+  "subtasks": [
+    {
+      "issue_key": "ACQ-3851",
+      "summary": "Add per-consumer routing config to publisher",
+      "status": "Done",
+      "assignee": "Vamshi V",
+      "resolved": "2026-06-04T11:15:00Z",
+      "pr_link": "bitbucket.org/aipulse/application-consumer/pull/482"
+    },
+    {
+      "issue_key": "ACQ-3852",
+      "summary": "DB migration create messaging_config table",
+      "status": "Done",
+      "assignee": "Vamshi V",
+      "resolved": "2026-06-04T16:42:00Z",
+      "pr_link": "bitbucket.org/aipulse/application-consumer/pull/483",
+      "critical_note": "This migration must run BEFORE the publisher initializes. Story marked Done (code merged) but the migration JOB was not executed against CDE2 at deploy time. This is the root cause."
+    },
+    {
+      "issue_key": "ACQ-3853",
+      "summary": "Integration tests for routing config in QA",
+      "status": "Done",
+      "assignee": "Anisha C",
+      "resolved": "2026-06-05T19:08:00Z",
+      "pr_link": "bitbucket.org/aipulse/application-consumer/pull/484",
+      "note": "QA passed because the migration WAS run in QA. The gap is CDE2-specific."
+    },
+    {
+      "issue_key": "ACQ-3854",
+      "summary": "Update release notes for routing config change",
+      "status": "Done",
+      "assignee": "Vamshi V",
+      "resolved": "2026-06-06T18:34:00Z",
+      "pr_link": "bitbucket.org/aipulse/release-notes/pull/91"
+    }
+  ],
+
+  "service_catalog_graph": {
+    "comment": "credit-apply -> application-consumer -> fan-out to three consumers. The hero release breaks application-consumer's publish to all three; sms-consumer is shown as the primary victim.",
+    "application": "application-consumer",
+    "role": "producer (fan-out)",
+    "upstream": [
+      { "application": "credit-apply", "relationship": "rabbitmq_producer", "queue": "credit-applications" }
+    ],
+    "downstream": [
+      { "application": "sms-consumer", "relationship": "rabbitmq_consumer", "queue": "notify-sms", "criticality": "primary" },
+      { "application": "email-consumer", "relationship": "rabbitmq_consumer", "queue": "notify-email", "criticality": "secondary" },
+      { "application": "audit-consumer", "relationship": "rabbitmq_consumer", "queue": "audit-events", "criticality": "secondary" }
+    ]
+  },
+
+  "past_incidents": [
+    {
+      "inc_id": "INC0221904",
+      "date": "2026-03-18",
+      "application": "application-consumer",
+      "short_description": "Forgotten DB migration -> publisher init failure -> downstream consumers starved",
+      "root_cause": "A release required a schema migration that was not applied before deploy. The RabbitMQ publisher failed to initialize against the missing schema and silently stopped publishing. App reported healthy (HTTP 200, health checks green); downstream consumers went to zero. No application-level ERROR logs - the publisher init failure was logged at DEBUG only.",
+      "resolution": "Ran the pending migration, restarted the publisher. Added a post-deploy publisher-health probe to the runbook (not yet enforced platform-wide).",
+      "duration_minutes": 118,
+      "severity": 1,
+      "pattern_tags": ["missing_migration", "silent_publisher_init_failure", "downstream_starvation"],
+      "similar_to_current_release": "HIGH"
+    },
+    {
+      "inc_id": "INC0218763",
+      "date": "2026-04-12",
+      "application": "sms-consumer",
+      "short_description": "sms-consumer message backlog after upstream config change",
+      "root_cause": "Upstream routing key changed without coordinating the consumer binding; messages published to a key with no bound queue. Silent message loss.",
+      "resolution": "Restored the binding. Added routing-key change checklist.",
+      "duration_minutes": 73,
+      "severity": 2,
+      "pattern_tags": ["routing_misconfig", "downstream_starvation"],
+      "similar_to_current_release": "MEDIUM"
+    },
+    {
+      "inc_id": "INC0214098",
+      "date": "2026-02-22",
+      "application": "application-consumer",
+      "short_description": "Thread pool exhaustion under high fan-out load",
+      "root_cause": "Fan-out thread pool saturated during a traffic spike. Unrelated to messaging init.",
+      "resolution": "Increased pool size, horizontal scaling.",
+      "duration_minutes": 84,
+      "severity": 2,
+      "pattern_tags": ["thread_pool_exhaustion"],
+      "similar_to_current_release": "LOW"
+    }
+  ],
+
+  "known_failure_modes": [
+    { "tag": "missing_migration", "description": "A required schema migration is not applied before the app initializes against it." },
+    { "tag": "silent_publisher_init_failure", "description": "RabbitMQ publisher fails to initialize and stops publishing without raising application-level errors (logged at DEBUG only)." },
+    { "tag": "downstream_starvation", "description": "Downstream consumers receive zero messages while the producer reports healthy." },
+    { "tag": "routing_misconfig", "description": "Messages published to a routing key with no bound consumer queue; silent loss." },
+    { "tag": "thread_pool_exhaustion", "description": "Fan-out thread pool saturates under high concurrent load." }
+  ],
+
+  "expected_metric_shifts": {
+    "comment": "What the release intended. ReleaseWatch uses these as the litmus test for explained vs unexplained drift.",
+    "application_consumer_http": { "expected_change": "no change", "rationale": "Routing config does not affect the HTTP layer", "unexplained_threshold": "any 5xx increase" },
+    "application_consumer_publish_rate": { "expected_change": "no change", "rationale": "Routing config changes keys, not volume; publish rate should hold at baseline", "unexplained_threshold": "any drop > 10% is unexplained; a drop to 0 is the documented silent-publisher-init failure mode" },
+    "sms_consumer_inbound_rate": { "expected_change": "no change", "rationale": "sms-consumer continues to receive at baseline; routing keys are transparent to it", "unexplained_threshold": "any drop > 15% is unexplained drift; a flatline to 0 is critical" },
+    "email_consumer_inbound_rate": { "expected_change": "no change", "rationale": "same as sms-consumer", "unexplained_threshold": "any drop > 15%" },
+    "audit_consumer_inbound_rate": { "expected_change": "no change", "rationale": "same as sms-consumer", "unexplained_threshold": "any drop > 15%" }
+  },
+
+  "metric_snapshots": {
+    "pre_deploy_baseline": {
+      "timestamp": "2026-06-08T01:00:00Z",
+      "application_consumer_http_2xx_per_min": 410,
+      "application_consumer_http_5xx_per_min": 0,
+      "application_consumer_cpu_percent": 18,
+      "application_consumer_publish_rate_per_min": 255,
+      "application_consumer_error_count_30min": 0,
+      "sms_consumer_inbound_per_min": 85,
+      "email_consumer_inbound_per_min": 85,
+      "audit_consumer_inbound_per_min": 85
+    },
+    "yesterday_same_hour": {
+      "timestamp": "2026-06-07T01:32:00Z",
+      "application_consumer_publish_rate_per_min": 251,
+      "sms_consumer_inbound_per_min": 83,
+      "email_consumer_inbound_per_min": 84,
+      "audit_consumer_inbound_per_min": 82
+    },
+    "last_week_same_hour": {
+      "timestamp": "2026-06-01T01:32:00Z",
+      "application_consumer_publish_rate_per_min": 248,
+      "sms_consumer_inbound_per_min": 80,
+      "email_consumer_inbound_per_min": 81,
+      "audit_consumer_inbound_per_min": 79
+    },
+    "current_l2_amber_moment": {
+      "timestamp": "2026-06-08T01:36:00Z",
+      "comment": "4 min post-deploy (deploy completed 01:32). First L2 threshold crossing - sms-consumer inbound collapsing.",
+      "application_consumer_http_2xx_per_min": 408,
+      "application_consumer_http_5xx_per_min": 0,
+      "application_consumer_cpu_percent": 19,
+      "application_consumer_publish_rate_per_min": 22,
+      "application_consumer_error_count_30min": 0,
+      "sms_consumer_inbound_per_min": 9,
+      "email_consumer_inbound_per_min": 11,
+      "audit_consumer_inbound_per_min": 8
+    },
+    "current_l3_red_moment": {
+      "timestamp": "2026-06-08T01:40:00Z",
+      "comment": "8 min post-deploy. Publish path fully dead. All three downstream consumers flatlined. Escalating to L3.",
+      "application_consumer_http_2xx_per_min": 409,
+      "application_consumer_http_5xx_per_min": 0,
+      "application_consumer_cpu_percent": 19,
+      "application_consumer_heap_percent": 38,
+      "application_consumer_publish_rate_per_min": 0,
+      "application_consumer_error_count_30min": 0,
+      "sms_consumer_inbound_per_min": 0,
+      "email_consumer_inbound_per_min": 0,
+      "audit_consumer_inbound_per_min": 0,
+      "publish_path_state": "DEAD since 01:32:14 (exactly deploy completion time)"
+    }
+  },
+
+  "bitbucket_diff": {
+    "repo": "aipulse/application-consumer",
+    "compared_against": "last green deploy (2026-06-01.1.18)",
+    "current_build": "20260608.1.42",
+    "commit_count": 5,
+    "commits": [
+      {
+        "sha": "a7f3c19",
+        "author": "Vamshi V",
+        "date": "2026-06-04T11:15:00Z",
+        "file": "src/main/java/com/aipulse/consumer/publish/RoutingConfigLoader.java",
+        "summary": "Load per-consumer routing config from messaging_config table on publisher init",
+        "diff_snippet": "+ RoutingConfig cfg = routingConfigRepository.loadAll(); // reads messaging_config table",
+        "behavioral_change": true,
+        "plausible_cause_of": ["missing_migration", "silent_publisher_init_failure", "downstream_starvation"]
+      },
+      {
+        "sha": "8e2b491",
+        "author": "Vamshi V",
+        "date": "2026-06-04T16:42:00Z",
+        "file": "db/migrations/V20260604__create_messaging_config.sql",
+        "summary": "Migration: create messaging_config table (REQUIRED before publisher init)",
+        "diff_snippet": "+ CREATE TABLE messaging_config ( consumer_name VARCHAR(64), routing_key VARCHAR(128) ... );",
+        "behavioral_change": true,
+        "migration": true,
+        "migration_run_on_cde2": false,
+        "plausible_cause_of": ["missing_migration", "silent_publisher_init_failure"]
+      },
+      {
+        "sha": "4f1c0a8",
+        "author": "Anisha C",
+        "date": "2026-06-05T10:11:00Z",
+        "file": "src/test/java/com/aipulse/consumer/publish/RoutingConfigLoaderTest.java",
+        "summary": "Tests for routing config loader",
+        "diff_snippet": "+ assertThat(cfg.forConsumer(\"sms-consumer\")).isNotNull();",
+        "behavioral_change": false
+      },
+      {
+        "sha": "91e7d23",
+        "author": "Vamshi V",
+        "date": "2026-06-05T14:05:00Z",
+        "file": "README.md",
+        "summary": "Document routing config + migration ordering requirement",
+        "diff_snippet": "+ ### Routing config requires the messaging_config migration to run first ...",
+        "behavioral_change": false
+      },
+      {
+        "sha": "b203fa5",
+        "author": "Vamshi V",
+        "date": "2026-06-06T09:21:00Z",
+        "file": "src/main/java/com/aipulse/consumer/publish/Publisher.java",
+        "summary": "Add DEBUG log on publisher init outcome",
+        "diff_snippet": "+ logger.debug(\"Publisher init: {}\", initResult); // NOTE: DEBUG only, not ERROR",
+        "behavioral_change": false,
+        "note": "This is why the init failure is silent in production logs - it logs at DEBUG."
+      }
+    ]
+  },
+
+  "confluence_release_template": {
+    "comment": "The PRE-DEFINED Confluence release template. ReleasePilot READS this template and FILLS each section with release-specific details. It does not invent a page from scratch.",
+    "template_name": "Synchrony Standard Release Page v3",
+    "sections": [
+      { "key": "scope", "title": "Scope & Intent", "fill": "release-specific summary from Jira story + subtasks" },
+      { "key": "risk_score", "title": "Risk Score", "fill": "computed 0-100 score + band + rationale" },
+      { "key": "deployment_plan", "title": "Deployment Plan", "fill": "window, build id, foundation progression, pipeline steps" },
+      { "key": "rollback_plan", "title": "Rollback Plan", "fill": "revert build id + estimated time" },
+      { "key": "risk_assessment", "title": "Risk Assessment (Risk Packet)", "fill": "past INCs, known failure modes, expected metric shifts" },
+      { "key": "downstream_impact", "title": "Downstream Impact", "fill": "service-catalog downstream apps to watch" },
+      { "key": "approvers", "title": "Approvers", "fill": "tech lead, manager, CAB" },
+      { "key": "signoff", "title": "Sign-off", "fill": "populated as approvals complete" }
+    ]
+  },
+
+  "chg_ticket": {
+    "chg_id": "CHG0049182",
+    "title": "application-consumer per-consumer routing config",
+    "application": "application-consumer",
+    "foundation_progression": ["CDE2", "CDE3"],
+    "risk_classification": "Medium",
+    "risk_score": 72,
+    "linked_story": "ACQ-3847",
+    "release_page_link": "/sites/AIPulseReleases/SitePages/Release-2026-06-08.aspx",
+    "deploy_window_start": "2026-06-08T01:30:00Z",
+    "deploy_window_end": "2026-06-08T01:35:00Z",
+    "build_id": "20260608.1.42",
+    "state_progression": ["New", "Assess", "Implement", "Watching", "Closed-Pending-Review"],
+    "current_state": "Watching",
+    "approvers": [
+      { "role": "Tech Lead", "name": "Vamshi V", "status": "Approved", "approved_at": "2026-06-07T22:35:00Z" },
+      { "role": "Manager", "name": "Anisha C", "status": "Approved", "approved_at": "2026-06-07T23:42:11Z" },
+      { "role": "CAB", "name": "Auto-medium-risk", "status": "Approved", "approved_at": "2026-06-07T23:42:18Z" }
+    ]
+  },
+
+  "active_watches_dashboard": {
+    "comment": "9 tiles on the dashboard at demo time. credit-apply is the green contrast (risk 28). application-consumer is the demo target (the silent failure).",
+    "items": [
+      { "chg_id": "CHG0049180", "application": "credit-apply", "risk_score": 28, "watch_state": "L1_CLEAR", "started": "2026-06-07T23:50:00Z", "notes": "all clear · 4h 22m · risk 28 Low", "is_contrast": true },
+      { "chg_id": "CHG0049181", "application": "notification-dispatcher", "risk_score": 31, "watch_state": "L1_CLEAR", "started": "2026-06-07T22:04:00Z", "notes": "all clear · 6h 08m" },
+      { "chg_id": "CHG0049182", "application": "application-consumer", "risk_score": 72, "watch_state": "L3_INC_OPEN", "started": "2026-06-08T01:32:14Z", "notes": "RCA attached · INC0228994", "is_demo_target": true },
+      { "chg_id": "CHG0049183", "application": "payment-gateway-router", "risk_score": 44, "watch_state": "L2_DRIFT", "started": "2026-06-08T02:42:00Z", "notes": "response time +28%" },
+      { "chg_id": "CHG0049184", "application": "rewards-calc-engine", "risk_score": 22, "watch_state": "L1_CLEAR", "started": "2026-06-08T01:28:00Z", "notes": "all clear · 2h 44m" },
+      { "chg_id": "CHG0049185", "application": "offer-eligibility-api", "risk_score": 35, "watch_state": "L1_CLEAR", "started": "2026-06-08T01:01:00Z", "notes": "all clear · 3h 11m" },
+      { "chg_id": "CHG0049186", "application": "audit-consumer", "risk_score": 19, "watch_state": "L1_CLEAR", "started": "2026-06-07T23:10:00Z", "notes": "all clear · 5h 02m" },
+      { "chg_id": "CHG0049187", "application": "partner-callback-svc", "risk_score": 40, "watch_state": "L1_CLEAR", "started": "2026-06-08T02:34:00Z", "notes": "all clear · 1h 38m" },
+      { "chg_id": "CHG0049188", "application": "statement-generator", "risk_score": 27, "watch_state": "L1_CLEAR", "started": "2026-06-08T03:18:00Z", "notes": "all clear · 0h 54m" }
+    ]
+  },
+
+  "demo_target_inc": {
+    "comment": "The INC ReleaseWatch creates at L3.",
+    "inc_id": "INC0228994",
+    "linked_chg": "CHG0049182",
+    "title": "Silent publish failure · application-consumer downstream consumers starved · CHG0049182",
+    "severity": 1,
+    "state": "New",
+    "assignment_group": "application-consumer-oncall",
+    "created_by": "ReleaseWatch (agent)",
+    "rca_confidence": 0.84,
+    "evidence_summary": "Three downstream consumers flatlined to 0 at exact deploy time · application-consumer HTTP healthy · migration subtask ACQ-3852 NOT RUN on CDE2 · matches past INC0221904"
+  },
+
+  "l3_rca_expected": {
+    "comment": "The pre-rendered RCA the demo streams at scene 6. Keep the mock and the l3_rca_prompt test harness in sync with this.",
+    "root_cause": "application-consumer's release (ACQ-3847) added per-consumer routing config that reads a new messaging_config table on publisher init. The required migration (subtask ACQ-3852) was not applied on CDE2. The publisher failed to initialize against the missing schema and silently stopped publishing - starving sms-consumer, email-consumer, and audit-consumer.",
+    "evidence": [
+      "All three downstream consumers inbound rate dropped to 0/min at 01:32, exactly at deploy completion (baseline ~85/min each).",
+      "application-consumer is UP: HTTP 2xx steady at ~409/min, 0 5xx, CPU 19%, 0 ERROR logs - publisher fails open, logs only at DEBUG.",
+      "Deploy build 20260608.1.42 includes migration subtask ACQ-3852; migration job shows NOT RUN on CDE2 (it ran in QA, which is why QA passed).",
+      "Risk packet flagged sms/email/audit-consumer as downstream to watch and rated this release 72/Elevated for the migration dependency.",
+      "Past INC0221904 (Mar 2026): identical pattern - forgotten migration, silent publisher init failure, downstream starvation."
+    ],
+    "reasoning": "The deploy pipeline validates the HTTP layer and health checks, not the async publisher. The app reports healthy while the message path is dead. No single dashboard owns 'application-consumer to sms-consumer should be flowing', so the break is invisible to per-system monitoring. Exact deploy-time correlation across three consumers plus an identifiable unrun migration make the cause unambiguous.",
+    "fix_option_a": "Run the pending messaging_config migration on CDE2, then restart the publisher. ~10 min. Resolves without rollback.",
+    "fix_option_b": "Roll back application-consumer to build 20260601.1.18 via UDeploy. ~5 min.",
+    "long_term": "Add a publisher-health probe (not just HTTP health) to release readiness, and gate migration-dependent releases on a migration-applied check before marking deploy complete.",
+    "confidence": 0.84,
+    "confidence_rationale": "Exact deploy-time correlation on three downstream consumers, an identifiable unrun migration subtask, and a matching past INC. Not higher because the publisher init failure is inferred from the schema dependency rather than a captured init-error log (it logs at DEBUG)."
+  },
+
+  "notification_targets": {
+    "distribution_list": "dl-application-consumer-oncall@aipulse.onmicrosoft.com",
+    "teams_channel_release_pilot": "#release-pilot-channel",
+    "teams_channel_release_watch": "#release-watch-acquisition",
+    "on_call_user_alias": "Anisha C"
+  },
+
+  "teams_dialogue": {
+    "scene_1_jira_pickup": [
+      { "from": "Release Bot", "ts": "01:14", "is_bot": true, "content": "New release trigger from Jira · ACQ-3847 · application-consumer · Fix Version 2026.06.08 · risk score 72 (Elevated) · routed to ReleasePilot." },
+      { "from": "ReleasePilot", "ts": "01:14", "is_bot": true, "content": "Acknowledged. Reading story + 4 subtasks · pulling past INCs · resolving downstream consumers · loading the standard release template · ETA ~90s." },
+      { "from": "ReleasePilot", "ts": "01:15", "is_bot": true, "content": "Release page filled from template · risk 72 (migration dependency) · 3 downstream consumers flagged to watch · CHG0049182 created · awaiting review approval." }
+    ],
+    "scene_7_l3_human_response": [
+      { "from": "Anisha C (On-call)", "ts": "01:41", "is_bot": false, "content": "Confirmed - migration ACQ-3852 never ran on CDE2. Running it now and restarting the publisher. Keeping INC0228994 open for the post-mortem." },
+      { "from": "ReleaseWatch", "ts": "01:41", "is_bot": true, "content": "Acknowledged. Cadence relaxed to 5-min. INC0228994 stays open. Watching for downstream recovery - I'll confirm when sms/email/audit-consumer return to baseline." }
+    ]
+  }
+}

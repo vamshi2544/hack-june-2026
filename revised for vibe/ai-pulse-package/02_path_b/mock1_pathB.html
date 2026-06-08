@@ -1,0 +1,1071 @@
+<!-- SUPERSEDED-BANNER -->
+> ⚠️ **REFERENCE ONLY — Copilot Studio path, abandoned in the platform pivot. Old scenario. Do not build from this.**
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReleasePilot + ReleaseWatch — Path B Demo (real M365)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --syf-yellow:#FFCE32;
+  --syf-yellow-soft:rgba(255,206,50,.12);
+  --syf-black:#0a0e14;
+  --bg:#0a0e14;
+  --panel:#131820;
+  --panel2:#1a2230;
+  --border:#2a3340;
+  --ink:#f0f2f5;
+  --dim:#9da9b8;
+  --faint:#6b7785;
+  --danger:#ff6b6b;
+  --warning:#ffb454;
+  --success:#7fd99b;
+  --pilot:#5b8fc7;
+  --jira-blue:#0052cc;
+  --jira-blue-deep:#0747a6;
+  --sp-blue:#0078d4;
+  --sp-teal:#03787C;
+  --sp-bg:#f3f2f1;
+  --sp-grey:#605e5c;
+  --sp-ink:#323130;
+  --teams-purple:#6264a7;
+  --teams-bg:#f5f5f5;
+  --teams-dark:#1e1e2e;
+  --font-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--font-sans);height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased}
+.app{display:grid;grid-template-rows:auto 1fr;height:100vh}
+
+/* top bar */
+.topbar{background:var(--panel);border-bottom:1px solid var(--border);padding:9px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.brand .dot{width:9px;height:9px;background:var(--syf-yellow);border-radius:50%}
+.brand .nm{font-weight:700;font-size:13px;letter-spacing:-.01em}
+.brand .sub{font-family:var(--font-mono);font-size:9.5px;color:var(--faint);letter-spacing:.08em;text-transform:uppercase;margin-left:6px}
+.path-pill{font-family:var(--font-mono);font-size:9.5px;color:var(--syf-yellow);background:var(--syf-yellow-soft);padding:3px 9px;border-radius:5px;letter-spacing:.08em;border:1px solid rgba(255,206,50,.4);text-transform:uppercase;font-weight:700;margin-left:6px}
+.scene-nav{display:flex;gap:5px;flex:1;justify-content:center;flex-wrap:wrap}
+.sn-btn{background:var(--panel2);border:1px solid var(--border);color:var(--dim);font-family:var(--font-mono);font-size:9.5px;letter-spacing:.05em;padding:6px 10px;border-radius:5px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px;text-transform:uppercase}
+.sn-btn:hover{border-color:var(--syf-yellow);color:var(--ink)}
+.sn-btn.active{background:var(--syf-yellow-soft);border-color:var(--syf-yellow);color:var(--syf-yellow)}
+.sn-btn .n{font-weight:600;opacity:.6}
+.sn-btn.active .n{opacity:1}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.ctrl{background:transparent;border:1px solid var(--border);color:var(--dim);font-family:var(--font-mono);font-size:9.5px;letter-spacing:.05em;padding:6px 10px;border-radius:5px;cursor:pointer;text-transform:uppercase}
+.ctrl:hover{border-color:var(--syf-yellow);color:var(--syf-yellow)}
+.ctrl.primary{background:var(--syf-yellow);color:var(--syf-black);border-color:var(--syf-yellow);font-weight:700}
+
+.stage{position:relative;overflow:hidden}
+.scene{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;flex-direction:column;padding:14px 20px;overflow-y:auto}
+.scene.active{opacity:1;pointer-events:auto}
+.scene-header{margin-bottom:12px;flex-shrink:0}
+.scene-tag{font-family:var(--font-mono);font-size:10px;color:var(--syf-yellow);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:10px}
+.scene-tag::before{content:"";width:18px;height:1px;background:var(--syf-yellow)}
+.scene-title{font-size:20px;font-weight:700;letter-spacing:-.01em}
+.scene-sub{font-size:13px;color:var(--dim);margin-top:4px;max-width:80ch}
+.scene-body{flex:1;display:grid;gap:12px;min-height:0}
+
+.surface-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:4px;padding-left:4px;display:flex;justify-content:space-between;align-items:center}
+.surface-label .real-tag{color:var(--success);font-weight:700;font-size:9.5px}
+.surface-label .sim-tag{color:var(--pilot);font-weight:700;font-size:9.5px}
+
+/* ===== OVERVIEW ===== */
+.scene0 .scene-body{grid-template-columns:1fr;align-items:center;justify-content:center}
+.overview{max-width:1020px;margin:0 auto}
+.ov-hero{margin-bottom:18px}
+.ov-hero h2{font-size:32px;font-weight:800;line-height:1.05;letter-spacing:-.02em;margin-bottom:10px}
+.ov-hero h2 .y{color:var(--syf-yellow)}
+.ov-hero p{font-size:14.5px;color:var(--dim);max-width:78ch;line-height:1.55}
+.surface-key{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:800px){.surface-key{grid-template-columns:1fr}}
+.surf-card{padding:12px 14px;border-radius:8px;border:1px solid var(--border);background:var(--panel)}
+.surf-card .what{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;color:var(--success)}
+.surf-card .nm{font-weight:600;font-size:13px;color:var(--ink);margin-bottom:5px}
+.surf-card .d{font-size:11.5px;color:var(--dim);line-height:1.5}
+.surf-card.sim .what{color:var(--pilot)}
+.surf-card.mock .what{color:var(--syf-yellow)}
+.scene-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:18px}
+.scene-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;transition:.15s}
+.scene-card:hover{border-color:var(--syf-yellow);transform:translateY(-2px)}
+.scene-card .ns{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.08em;margin-bottom:4px;color:var(--syf-yellow)}
+.scene-card .nt{font-weight:600;font-size:12.5px;color:var(--ink);margin-bottom:4px;line-height:1.3}
+.scene-card .nd{font-size:11px;color:var(--dim);line-height:1.5}
+.start-line{margin-top:18px;display:flex;align-items:center;justify-content:center;gap:14px;color:var(--faint);font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase}
+.start-line button{background:var(--syf-yellow);color:var(--syf-black);border:none;font-weight:700;padding:10px 20px;border-radius:7px;cursor:pointer;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em}
+
+/* ===== SCENE 1 split (Jira → Teams pickup) ===== */
+.scene1 .scene-body{grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:900px){.scene1 .scene-body{grid-template-columns:1fr}}
+
+/* Atlassian Jira UI */
+.jira{background:#1d2125;border:1px solid #34373c;border-radius:10px;display:flex;flex-direction:column;min-height:0;overflow:hidden;height:100%}
+.jira-head{background:#22272b;padding:8px 14px;border-bottom:1px solid #34373c;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.jira-head .logo{background:var(--jira-blue);color:#fff;font-weight:800;padding:3px 8px;border-radius:3px;font-size:11px}
+.jira-head .breadcrumb{font-size:11px;color:#9aa1a8}
+.jira-head .breadcrumb b{color:#fff}
+.jira-head .real-badge{margin-left:auto;font-family:var(--font-mono);font-size:9px;color:var(--success);padding:2px 7px;border-radius:3px;background:rgba(127,217,155,.15);border:1px solid rgba(127,217,155,.4);letter-spacing:.05em}
+.jira-body{padding:14px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.jira-story-head{display:flex;align-items:center;gap:8px}
+.jira-tag{background:#2a3138;padding:2px 7px;border-radius:3px;font-size:10px;font-family:var(--font-mono);color:#9aa1a8;border:1px solid #3a4148}
+.jira-tag.story{background:rgba(127,217,155,.15);color:#7fd99b;border-color:rgba(127,217,155,.3)}
+.jira-tag.done{background:rgba(0,82,204,.2);color:#5b8fc7;border-color:rgba(91,143,199,.3)}
+.jira-title{font-size:16px;font-weight:600;color:#fff;margin-top:4px}
+.jira-meta{display:grid;grid-template-columns:100px 1fr;gap:5px 12px;font-size:11.5px;color:#9aa1a8;padding:10px 0;border-top:1px solid #34373c;border-bottom:1px solid #34373c}
+.jira-meta .k{font-weight:500}
+.jira-meta .v{color:#dadce0}
+.jira-section-h{font-size:10.5px;font-weight:600;color:#9aa1a8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.subtask{padding:6px 9px;border:1px solid #34373c;border-radius:5px;margin-bottom:4px;display:flex;align-items:center;gap:8px;font-size:11px;color:#dadce0;background:#22272b}
+.subtask .id{font-family:var(--font-mono);color:#5b8fc7;font-weight:500;font-size:10.5px}
+.subtask .nm{flex:1}
+.subtask .status{font-size:9px;padding:2px 6px;border-radius:3px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.04em;background:rgba(127,217,155,.15);color:#7fd99b}
+.comment{padding:8px 10px;background:#22272b;border-radius:5px;margin-bottom:6px;border-left:2px solid #34373c;font-size:11.5px;color:#dadce0}
+.comment .who{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.comment .av{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#5b8fc7,#3070b8);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff}
+.comment .nm-c{font-weight:500;color:#fff;font-size:11px}
+.comment .ts{font-family:var(--font-mono);font-size:9.5px;color:#888;margin-left:auto}
+.comment.trigger{border-left:3px solid var(--syf-yellow);background:rgba(255,206,50,.04);animation:flashIn .8s ease both}
+.comment.trigger .mention{color:var(--syf-yellow);font-weight:600}
+@keyframes flashIn{0%{background:rgba(255,206,50,.25)}100%{background:rgba(255,206,50,.04)}}
+.jira-comments-input{margin-top:8px}
+.jira-comments-input textarea{width:100%;background:#22272b;border:1px solid #34373c;border-radius:5px;padding:8px 10px;color:#dadce0;font-family:var(--font-sans);font-size:11.5px;resize:none;min-height:50px}
+.jira-comments-input .actions{display:flex;justify-content:flex-end;margin-top:6px;gap:5px}
+.jira-btn{font-size:11px;padding:5px 11px;border-radius:4px;border:1px solid #34373c;background:transparent;color:#dadce0;cursor:pointer}
+.jira-btn.primary{background:var(--jira-blue);color:#fff;border-color:var(--jira-blue);font-weight:500}
+
+/* Automation rule fires arrow */
+.arrow-row{display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:10.5px;color:var(--syf-yellow);letter-spacing:.08em;padding:6px;background:var(--syf-yellow-soft);border-radius:5px;margin:4px 0;text-transform:uppercase;text-align:center;border:1px dashed rgba(255,206,50,.3)}
+
+/* Microsoft Teams UI */
+.teams{background:#f5f5f5;border:1px solid #d1d1d1;border-radius:10px;display:flex;flex-direction:column;min-height:0;overflow:hidden;height:100%}
+.teams-head{background:#fff;padding:8px 14px;border-bottom:1px solid #e1e1e1;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.teams-head .logo{background:var(--teams-purple);color:#fff;font-weight:800;padding:3px 8px;border-radius:3px;font-size:11px}
+.teams-head .channel{font-size:12px;color:var(--sp-ink)}
+.teams-head .channel b{color:#000;font-weight:600}
+.teams-head .real-badge{margin-left:auto;font-family:var(--font-mono);font-size:9px;color:#0d7d3a;padding:2px 7px;border-radius:3px;background:rgba(127,217,155,.15);border:1px solid rgba(127,217,155,.4);letter-spacing:.05em}
+.teams-body{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:9px;background:#fafafa}
+.teams-msg{display:flex;gap:9px;animation:fadeUp .4s ease both;opacity:0}
+.teams-msg.show{opacity:1}
+.teams-msg .av-t{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:11px;flex-shrink:0}
+.teams-msg .av-t.bot{background:linear-gradient(135deg,var(--teams-purple),#4b4d8f)}
+.teams-msg .av-t.flow{background:linear-gradient(135deg,#0078d4,#005a9e)}
+.teams-msg .av-t.human{background:linear-gradient(135deg,#5b8fc7,#3070b8)}
+.teams-msg .av-t.agent{background:linear-gradient(135deg,var(--syf-yellow),#E0B520);color:var(--syf-black)}
+.teams-msg .body-t{flex:1;font-size:12.5px;background:#fff;border-radius:6px;padding:9px 12px;border:1px solid #e1e1e1;color:var(--sp-ink)}
+.teams-msg .body-t .from-line{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.teams-msg .body-t .nm-t{font-weight:600;color:#000;font-size:12px}
+.teams-msg .body-t .bot-tag{font-family:var(--font-mono);font-size:8.5px;background:var(--teams-purple);color:#fff;padding:1px 5px;border-radius:3px;letter-spacing:.04em;text-transform:uppercase;font-weight:700}
+.teams-msg .body-t .ts-t{font-size:10.5px;color:#666;margin-left:auto;font-family:var(--font-mono)}
+.teams-msg .body-t .content{line-height:1.55;color:var(--sp-ink)}
+.teams-msg .body-t .content code{background:#f3f2f1;padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:11px;color:#a4262c}
+.teams-msg .body-t .content a{color:var(--sp-blue);text-decoration:none;font-family:var(--font-mono);font-size:11.5px;border-bottom:1px solid transparent}
+.teams-msg .body-t .content a:hover{border-color:var(--sp-blue)}
+.teams-msg .body-t .content .agent-step{padding:6px 10px;background:#faf9f8;border-left:2px solid var(--teams-purple);border-radius:4px;margin-top:6px;font-size:12px}
+.teams-msg .body-t .content .agent-step b{color:#000}
+.teams-msg .body-t .content ul{margin:5px 0 0 16px;font-size:12px;color:var(--sp-ink)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== SHAREPOINT UI ===== */
+.sp{background:#fff;border:1px solid #e1e1e1;border-radius:10px;display:flex;flex-direction:column;min-height:0;overflow:hidden;height:100%;color:var(--sp-ink)}
+.sp-head{background:#fff;padding:10px 18px;border-bottom:1px solid #edebe9;display:flex;align-items:center;gap:14px;flex-shrink:0}
+.sp-head .logo{background:var(--sp-blue);color:#fff;font-weight:800;padding:3px 9px;border-radius:3px;font-size:11px}
+.sp-head .site{font-size:13px;font-weight:600;color:#000}
+.sp-head .crumb{font-size:11.5px;color:#605e5c;font-family:var(--font-sans)}
+.sp-head .crumb b{color:#000;font-weight:500}
+.sp-head .real-badge{margin-left:auto;font-family:var(--font-mono);font-size:9px;color:#0d7d3a;padding:2px 7px;border-radius:3px;background:rgba(127,217,155,.15);border:1px solid rgba(127,217,155,.4);letter-spacing:.05em}
+.sp-body{padding:0;flex:1;overflow-y:auto;background:#fff}
+.sp-banner{padding:30px 30px 18px;border-bottom:1px solid #f3f2f1;background:linear-gradient(135deg,#fafafa,#fff)}
+.sp-banner h1{font-size:24px;color:#000;font-weight:600;letter-spacing:-.01em;line-height:1.2;margin-bottom:8px}
+.sp-banner .meta-line{display:flex;align-items:center;gap:10px;font-size:11.5px;color:#605e5c}
+.sp-banner .meta-line .av-sp{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--syf-yellow),#E0B520);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--syf-black);font-family:var(--font-sans)}
+.sp-content{padding:22px 30px;font-size:13px;color:#323130;line-height:1.6}
+.sp-content h2{font-size:16px;color:#000;font-weight:600;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #edebe9}
+.sp-content h3{font-size:13.5px;color:#000;font-weight:600;margin:14px 0 6px}
+.sp-content p{font-size:13px;color:#323130;line-height:1.6;margin-bottom:10px;max-width:none}
+.sp-content .info-box{background:#e7f3ff;border-left:3px solid var(--sp-blue);padding:10px 14px;border-radius:3px;margin:12px 0;font-size:12px;color:#323130}
+.sp-content .info-box.warning{background:#fff4e5;border-color:#ff8c00}
+.sp-content .info-box.risk{background:#fde7e9;border-color:#a4262c}
+.sp-content .info-box .lbl{font-weight:600;text-transform:uppercase;letter-spacing:.05em;font-size:10.5px;margin-bottom:4px;color:#000}
+.sp-content code{background:#f3f2f1;padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:11px;color:#a4262c}
+.sp-content ul{list-style:disc;padding-left:22px;margin:8px 0}
+.sp-content ul li{font-size:12.5px;color:#323130;line-height:1.6;margin-bottom:4px}
+.sp-content table{width:100%;border-collapse:collapse;margin:10px 0;font-size:11.5px}
+.sp-content table th{background:#f3f2f1;border:1px solid #edebe9;padding:7px 10px;text-align:left;color:#000;font-weight:600;font-size:11px}
+.sp-content table td{border:1px solid #edebe9;padding:7px 10px;color:#323130;font-size:11.5px}
+.sp-content table td .badge{padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600;font-family:var(--font-mono)}
+.sp-content table td .badge.low{background:#dff6dd;color:#107c10}
+.sp-content table td .badge.high{background:#fde7e9;color:#a4262c}
+.sp-content .agent-stamp{margin-top:18px;padding:9px 14px;background:rgba(98,100,167,.08);border:1px dashed var(--teams-purple);border-radius:5px;font-size:11px;color:#323130;display:flex;align-items:center;gap:8px;font-family:var(--font-mono)}
+.sp-content .agent-stamp .pill{background:var(--teams-purple);color:#fff;padding:2px 7px;border-radius:3px;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase}
+
+/* SharePoint LIST view (CHG and INC) */
+.sp-list{padding:0}
+.sp-list-toolbar{padding:8px 16px;border-bottom:1px solid #edebe9;display:flex;align-items:center;gap:10px;background:#fff}
+.sp-list-toolbar .btn-sp{font-size:11px;padding:5px 10px;border-radius:3px;border:1px solid #d2d0ce;background:#fff;color:#323130;font-family:var(--font-sans);cursor:pointer}
+.sp-list-toolbar .btn-sp.primary{background:var(--sp-blue);color:#fff;border-color:var(--sp-blue);font-weight:500}
+.sp-list-toolbar .filter-info{margin-left:auto;font-size:11px;color:#605e5c;font-family:var(--font-mono)}
+.sp-list-tbl{width:100%;border-collapse:collapse;font-size:11.5px}
+.sp-list-tbl thead th{background:#fafafa;padding:8px 12px;text-align:left;color:#000;font-weight:600;font-size:10.5px;border-bottom:1px solid #edebe9;text-transform:uppercase;letter-spacing:.04em;font-family:var(--font-sans)}
+.sp-list-tbl tbody td{padding:9px 12px;border-bottom:1px solid #f3f2f1;color:#323130;font-size:11.5px;font-family:var(--font-sans)}
+.sp-list-tbl tbody tr.highlight{background:rgba(255,206,50,.06);border-left:2px solid var(--syf-yellow)}
+.sp-list-tbl .id-link{color:var(--sp-blue);font-weight:500;text-decoration:none;font-family:var(--font-mono);font-size:11px}
+.sp-list-tbl .state-badge{padding:2px 8px;border-radius:3px;font-size:10px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.sp-list-tbl .state-badge.new{background:#e1e8ff;color:#1f3a8a}
+.sp-list-tbl .state-badge.assess{background:#fff4e5;color:#c2410c}
+.sp-list-tbl .state-badge.impl{background:#fff4e5;color:#c2410c}
+.sp-list-tbl .state-badge.review{background:#fef3c7;color:#854d0e}
+.sp-list-tbl .state-badge.done{background:#dff6dd;color:#107c10}
+.sp-list-tbl .state-badge.open{background:#fde7e9;color:#a4262c}
+
+/* SharePoint detail view */
+.sp-detail-view{padding:22px 30px}
+.sp-detail-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #edebe9}
+.sp-detail-head .id{font-family:var(--font-mono);background:#0078d4;color:#fff;padding:4px 10px;border-radius:4px;font-size:13px;font-weight:600}
+.sp-detail-head .title{font-size:16px;font-weight:600;flex:1;color:#000}
+.sp-detail-head .state{padding:4px 10px;border-radius:4px;font-size:10.5px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.05em;font-weight:700;background:#fff4e5;color:#c2410c}
+.sp-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;margin-bottom:18px;padding:14px;background:#fafafa;border-radius:6px;border:1px solid #edebe9}
+.sp-fld{font-size:12px}
+.sp-fld .lbl{font-size:10px;color:#605e5c;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;font-family:var(--font-mono);font-weight:600}
+.sp-fld .val{color:#000;font-weight:500}
+.sp-fld .val.mono{font-family:var(--font-mono);font-size:11px}
+.work-notes-h{font-size:11px;font-weight:700;color:#000;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;padding:6px 0;border-bottom:1px solid #edebe9}
+.work-note{padding:9px 12px;background:#fff;border:1px solid #edebe9;border-radius:5px;margin-bottom:6px;font-size:11.5px;color:#323130}
+.work-note .who-w{display:flex;align-items:center;gap:7px;margin-bottom:4px;font-size:10.5px;color:#605e5c}
+.work-note .who-w .av-w{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;font-family:var(--font-sans)}
+.work-note .who-w .av-w.agent{background:linear-gradient(135deg,var(--teams-purple),#4b4d8f)}
+.work-note .who-w .av-w.human{background:linear-gradient(135deg,#5b8fc7,#3070b8)}
+.work-note .who-w .nm-w{font-weight:600;color:#000;font-size:10.5px}
+.work-note .who-w .ts-w{margin-left:auto;font-family:var(--font-mono);font-size:9.5px;color:#888}
+.work-note.agent{border-left:3px solid var(--teams-purple);background:#faf9ff}
+.work-note code{background:#f3f2f1;padding:1px 4px;border-radius:2px;font-family:var(--font-mono);font-size:10.5px;color:#a4262c}
+
+/* Adaptive card inside Teams */
+.adaptive{background:#fff;border:1px solid #e1e1e1;border-radius:6px;margin-top:8px;overflow:hidden}
+.adaptive .alert-bar{font-size:10px;color:#a4262c;font-family:var(--font-mono);letter-spacing:.08em;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid #f3f2f1;display:flex;justify-content:space-between;background:#fde7e9}
+.adaptive .alert-bar .conf{color:#a4262c}
+.adaptive .card-content{padding:12px}
+.adaptive .card-title{font-size:13.5px;font-weight:600;color:#000;margin-bottom:8px;line-height:1.3}
+.adaptive .meta-grid{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:11px;color:#605e5c;margin-bottom:10px}
+.adaptive .meta-grid .k{font-family:var(--font-mono);color:#605e5c;font-size:10px;letter-spacing:.03em;text-transform:uppercase;padding-top:2px;font-weight:600}
+.adaptive .meta-grid .v{color:#323130;font-size:11.5px;line-height:1.5}
+.adaptive .meta-grid .v code{background:#f3f2f1;padding:1px 4px;border-radius:2px;color:#a4262c;font-family:var(--font-mono);font-size:10.5px}
+.adaptive .acts-t{display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px;border-top:1px solid #f3f2f1;background:#fafafa}
+.teams-btn{font-size:11px;padding:6px 12px;border-radius:3px;border:1px solid #d2d0ce;background:#fff;color:#323130;cursor:pointer;font-family:var(--font-sans)}
+.teams-btn:hover{background:#f3f2f1}
+.teams-btn.primary{background:var(--sp-blue);color:#fff;border-color:var(--sp-blue);font-weight:500}
+
+/* L2/L3 reasoning inside Teams message */
+.reasoning-stream{padding:9px 12px;background:#fafafa;border-radius:5px;border:1px solid #edebe9;margin-top:6px;font-family:var(--font-mono);font-size:11px;line-height:1.65;color:#323130}
+.reasoning-stream .step{padding:3px 0;display:flex;gap:8px;animation:fadeUp .35s ease both;opacity:0}
+.reasoning-stream .step.show{opacity:1}
+.reasoning-stream .step .ts{color:#888;font-size:10px;flex-shrink:0;width:60px}
+.reasoning-stream .step .lvl{flex-shrink:0;width:42px;font-size:9px;font-weight:600;letter-spacing:.04em;padding-top:1px}
+.reasoning-stream .step .lvl.INFO{color:var(--sp-blue)}
+.reasoning-stream .step .lvl.WARN{color:#c2410c}
+.reasoning-stream .step .lvl.AGENT{color:var(--teams-purple)}
+.reasoning-stream .step .lvl.RCA{color:#a4262c;font-weight:700}
+.reasoning-stream .step .msg{flex:1;color:#323130}
+.reasoning-stream .step .msg b{color:#000;font-weight:500}
+.reasoning-stream .step .msg code{background:#f3f2f1;padding:0 4px;border-radius:2px;color:#a4262c;font-family:var(--font-mono);font-size:10px}
+
+.foot-hint{position:fixed;bottom:6px;right:12px;font-family:var(--font-mono);font-size:9.5px;color:var(--faint);letter-spacing:.08em;pointer-events:none}
+
+/* Scene-specific layouts */
+.scene2 .scene-body, .scene3 .scene-body, .scene4 .scene-body{grid-template-columns:1fr}
+.scene5 .scene-body, .scene6 .scene-body, .scene7 .scene-body{grid-template-columns:1fr}
+
+@media(max-width:900px){.scene-nav{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="dot"></span>
+      <span class="nm">ReleasePilot + ReleaseWatch</span>
+      <span class="sub">Demo · Real M365 surfaces</span>
+      <span class="path-pill">PATH B</span>
+    </div>
+    <div class="scene-nav">
+      <button class="sn-btn active" data-scene="0"><span class="n">00</span>Overview</button>
+      <button class="sn-btn" data-scene="1"><span class="n">01</span>Jira → Teams</button>
+      <button class="sn-btn" data-scene="2"><span class="n">02</span>SharePoint page</button>
+      <button class="sn-btn" data-scene="3"><span class="n">03</span>CHG list + handoff</button>
+      <button class="sn-btn" data-scene="4"><span class="n">04</span>Watch dashboard</button>
+      <button class="sn-btn" data-scene="5"><span class="n">05</span>L2 drift in Teams</button>
+      <button class="sn-btn" data-scene="6"><span class="n">06</span>L3 RCA in Teams</button>
+      <button class="sn-btn" data-scene="7"><span class="n">07</span>Adaptive Card</button>
+    </div>
+    <div class="controls">
+      <button class="ctrl" id="replay">↻ Replay</button>
+      <button class="ctrl primary" id="next">Next →</button>
+    </div>
+  </div>
+
+  <div class="stage">
+
+    <!-- SCENE 0: OVERVIEW -->
+    <div class="scene scene0 active" data-scene="0">
+      <div class="overview">
+        <div class="ov-hero">
+          <h2>The <span class="y">same demo</span> — running on real M365 surfaces.</h2>
+          <p>Same 8 scenes, same agent, same narrative. In Path B, the visuals are real Atlassian Jira, real Microsoft Teams, and real SharePoint — wired together using only free webhooks and standard M365 connectors. No premium licensing, no real Synchrony tools touched.</p>
+        </div>
+
+        <div class="surface-key">
+          <div class="surf-card">
+            <div class="what">▸ REAL</div>
+            <div class="nm">Atlassian Jira (free tier)</div>
+            <div class="d">Vamshi's personal Jira Cloud. Real story, real comment, real automation rule. Push-only into M365.</div>
+          </div>
+          <div class="surf-card">
+            <div class="what">▸ REAL</div>
+            <div class="nm">Microsoft Teams</div>
+            <div class="d">The agent lives here. Studio agent published as a channel bot. Real Adaptive Cards, real chat reasoning visible.</div>
+          </div>
+          <div class="surf-card sim">
+            <div class="what">▸ SIMULATED</div>
+            <div class="nm">SharePoint as Confluence + SNOW</div>
+            <div class="d">Real SharePoint site. Page styled as Confluence release page. Lists representing CHG + INC tables.</div>
+          </div>
+        </div>
+
+        <div class="scene-list">
+          <div class="scene-card" data-jump="1">
+            <div class="ns">▸ SCENE 01</div>
+            <div class="nt">Jira comment → Teams</div>
+            <div class="nd">Real comment fires Jira Automation → POST to Teams → agent wakes</div>
+          </div>
+          <div class="scene-card" data-jump="2">
+            <div class="ns">▸ SCENE 02</div>
+            <div class="nt">SharePoint release page</div>
+            <div class="nd">Agent publishes Confluence-style release page in SharePoint with risk packet</div>
+          </div>
+          <div class="scene-card" data-jump="3">
+            <div class="ns">▸ SCENE 03</div>
+            <div class="nt">CHG list + approval gates</div>
+            <div class="nd">SharePoint list as CHG record · agent advances state through real Teams approvals</div>
+          </div>
+          <div class="scene-card" data-jump="4">
+            <div class="ns">▸ SCENE 04</div>
+            <div class="nt">Active watch dashboard</div>
+            <div class="nd">SharePoint list view showing every CHG ReleaseWatch is shepherding</div>
+          </div>
+          <div class="scene-card" data-jump="5">
+            <div class="ns">▸ SCENE 05</div>
+            <div class="nt">L2 drift in Teams</div>
+            <div class="nd">Studio agent reasons over deltas live, posts amber alert in real Teams channel</div>
+          </div>
+          <div class="scene-card" data-jump="6">
+            <div class="ns">▸ SCENE 06</div>
+            <div class="nt">L3 RCA generation</div>
+            <div class="nd">4-step RCA streams in Teams · INC created as SharePoint row · confidence score</div>
+          </div>
+          <div class="scene-card" data-jump="7">
+            <div class="ns">▸ SCENE 07</div>
+            <div class="nt">Adaptive Card handoff</div>
+            <div class="nd">Real Adaptive Card with action buttons in real Teams · human takes over</div>
+          </div>
+        </div>
+
+        <div class="start-line">
+          <span>Press</span>
+          <button onclick="goScene(1)">Start the demo →</button>
+          <span>or use arrow keys</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 1: JIRA → TEAMS -->
+    <div class="scene scene1" data-scene="1">
+      <div class="scene-header">
+        <div class="scene-tag">▸ Scene 01 · Real Jira comment fires real automation</div>
+        <div class="scene-title">A release is ready. The trigger is a real Jira event.</div>
+        <div class="scene-sub">Left: Vamshi's real Jira Cloud. He types <code style="color:var(--syf-yellow);background:var(--panel2);padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:12px">@release-pilot go</code> as a comment. Right: the real Teams channel where Jira Automation posts the trigger — Studio agent wakes up.</div>
+      </div>
+      <div class="scene-body">
+        <!-- Jira side -->
+        <div>
+          <div class="surface-label"><span>▸ Atlassian Jira Cloud · personal account</span><span class="real-tag">REAL</span></div>
+          <div class="jira">
+            <div class="jira-head">
+              <span class="logo">JIRA</span>
+              <span class="breadcrumb">AI Pulse Projects / <b>ACQ-3847</b></span>
+              <span class="real-badge">LIVE</span>
+            </div>
+            <div class="jira-body" id="jiraB1">
+              <div class="jira-story-head">
+                <span class="jira-tag story">Story</span>
+                <span class="jira-tag done">Done</span>
+                <span class="jira-tag">Fix Version 2026.06.08</span>
+              </div>
+              <div class="jira-title">Enable durable messaging · acquisition-decision-orchestrator</div>
+              <div class="jira-meta">
+                <span class="k">Assignee</span><span class="v">Vamshi V</span>
+                <span class="k">Reporter</span><span class="v">Sanjay Kumar</span>
+                <span class="k">Application</span><span class="v">acquisition-decision-orchestrator</span>
+              </div>
+              <div>
+                <div class="jira-section-h">Subtasks · 4/4 complete</div>
+                <div class="subtask"><span class="id">ACQ-3848</span><span class="nm">Set persistent=true on DecisionMessagePublisher</span><span class="status">Done</span></div>
+                <div class="subtask"><span class="id">ACQ-3849</span><span class="nm">Update unit tests</span><span class="status">Done</span></div>
+                <div class="subtask"><span class="id">ACQ-3850</span><span class="nm">QA integration test with RabbitMQ</span><span class="status">Done</span></div>
+                <div class="subtask"><span class="id">ACQ-3851</span><span class="nm">Update release notes for durability</span><span class="status">Done</span></div>
+              </div>
+              <div>
+                <div class="jira-section-h">Comments</div>
+                <div class="comment">
+                  <div class="who"><span class="av">VV</span><span class="nm-c">Vamshi V</span><span class="ts">1 hour ago</span></div>
+                  All subtasks done. Moving to release queue.
+                </div>
+              </div>
+              <div class="jira-comments-input" id="jira1B-input">
+                <textarea id="jira1B-ta">@release-pilot go</textarea>
+                <div class="actions">
+                  <button class="jira-btn">Cancel</button>
+                  <button class="jira-btn primary" id="jira1B-submit">Save</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="arrow-row" id="jiraB-arrow" style="visibility:hidden">▼ Jira Automation rule fires · Send Web Request → Teams Incoming Webhook URL ▼</div>
+        </div>
+
+        <!-- Teams side -->
+        <div>
+          <div class="surface-label"><span>▸ Microsoft Teams · #release-pilot-channel</span><span class="real-tag">REAL</span></div>
+          <div class="teams">
+            <div class="teams-head">
+              <span class="logo">TEAMS</span>
+              <span class="channel"><b># release-pilot-channel</b></span>
+              <span class="real-badge">LIVE</span>
+            </div>
+            <div class="teams-body" id="teamsB1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 2: SHAREPOINT RELEASE PAGE -->
+    <div class="scene scene2" data-scene="2">
+      <div class="scene-header">
+        <div class="scene-tag">▸ Scene 02 · Risk packet → SharePoint page styled as Confluence</div>
+        <div class="scene-title">The agent's pre-deploy work product · a real SharePoint page.</div>
+        <div class="scene-sub">In Path B, "Confluence release page" is a real SharePoint page. Same content as Mock 1's Confluence view — the visual styling matches SharePoint's native look. Agent uses Studio's SharePoint connector to publish.</div>
+      </div>
+      <div class="scene-body">
+        <div class="surface-label"><span>▸ SharePoint · /sites/AIPulseReleases/SitePages/Release-2026-06-08.aspx</span><span class="sim-tag">SHAREPOINT</span></div>
+        <div class="sp">
+          <div class="sp-head">
+            <span class="logo">SPO</span>
+            <span class="site">AI Pulse · Acquisition Releases</span>
+            <span class="crumb">/ Pages / <b>Release 2026.06.08</b></span>
+            <span class="real-badge">PUBLISHED</span>
+          </div>
+          <div class="sp-body">
+            <div class="sp-banner">
+              <h1>Release 2026.06.08 · Acquisition Decision Family</h1>
+              <div class="meta-line">
+                <span class="av-sp">RP</span>
+                <span>Authored by <b style="color:#000">ReleasePilot</b> (Copilot Studio agent) · 23:14 UTC, June 7 2026 · Auto-generated</span>
+              </div>
+            </div>
+            <div class="sp-content">
+              <h2>Summary</h2>
+              <p>This release enables durable messaging on <code>acquisition-decision-orchestrator</code> by setting RabbitMQ message persistence to true. Improves resilience to broker restarts. Introduces additional memory pressure on the cluster — flagged in risk packet below.</p>
+
+              <div class="info-box">
+                <div class="lbl">▸ Scope</div>
+                1 application · 1 change ticket (CHG0049182) · 1 story (ACQ-3847) · 4 subtasks · deploy June 8 01:00 AM CDE2
+              </div>
+
+              <h2>Changes Included</h2>
+              <table>
+                <thead><tr><th>Story</th><th>Title</th><th>Author</th></tr></thead>
+                <tbody><tr><td><code>ACQ-3847</code></td><td>Enable durable messaging for acquisition decision events</td><td>Vamshi V</td></tr></tbody>
+              </table>
+
+              <h2>Deployment Plan</h2>
+              <ul>
+                <li><b>CDE2:</b> June 8, 01:00 AM ET — 30 minute window</li>
+                <li><b>CDE3:</b> June 9, 01:00 AM ET (if CDE2 watch clean for 24h)</li>
+              </ul>
+
+              <h2>▸ Risk Packet (read by ReleaseWatch agent)</h2>
+              <div class="info-box risk">
+                <div class="lbl">▸ Past INCs · acquisition-decision-orchestrator (last 180 days)</div>
+                <b>INC0214098</b> · 2026-02-22 · Thread pool exhaustion · resolved by scaling<br>
+                <b>INC0218763</b> · 2026-04-12 · RabbitMQ memory_high_watermark exceeded · backpressure cascade<br>
+                <b>INC0223440</b> · 2026-05-29 · Similar pattern on sibling app
+              </div>
+              <div class="info-box warning">
+                <div class="lbl">▸ Failure modes to watch</div>
+                <code>rabbitmq_backpressure</code> · <code>thread_pool_exhaustion</code> · <code>downstream_consumer_starvation</code>
+              </div>
+              <div class="info-box">
+                <div class="lbl">▸ Downstream apps to watch</div>
+                <code>decision-async-consumer</code> · <code>audit-recorder</code>
+              </div>
+              <div class="info-box warning">
+                <div class="lbl">▸ Expected metric shifts</div>
+                Producer latency +15ms expected (persistent messages). Any consumer-side latency increase beyond 50ms is <b>not</b> explained.
+              </div>
+
+              <h2>Approvals</h2>
+              <table>
+                <thead><tr><th>Role</th><th>Approver</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td>Tech Lead</td><td>Vamshi V</td><td><span class="badge low">Approved</span></td></tr>
+                  <tr><td>Manager</td><td>Anisha C</td><td><span class="badge low">Approved</span></td></tr>
+                  <tr><td>CAB</td><td>Auto-low-risk</td><td><span class="badge low">Approved</span></td></tr>
+                </tbody>
+              </table>
+
+              <div class="agent-stamp">
+                <span class="pill">Studio Agent</span>
+                <span>Page authored in 87 seconds via SharePoint connector · sources: 1 Jira story, 4 subtasks, 3 past INCs from SharePoint INCs list</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 3: CHG list + Teams handoff -->
+    <div class="scene scene3" data-scene="3">
+      <div class="scene-header">
+        <div class="scene-tag">▸ Scene 03 · SNOW CHG as SharePoint list · agent advances state via real Teams approvals</div>
+        <div class="scene-title">SharePoint list represents the change ticket. Approvals happen in real Teams.</div>
+        <div class="scene-sub">SharePoint list with state column simulates the SNOW CHG. The agent updates state through Adaptive Card approvals. Each work-note is a real list-item update by the Studio agent.</div>
+      </div>
+      <div class="scene-body">
+        <div class="surface-label"><span>▸ SharePoint List · CHG Tickets · CHG0049182</span><span class="sim-tag">SHAREPOINT LIST</span></div>
+        <div class="sp">
+          <div class="sp-head">
+            <span class="logo">SPO</span>
+            <span class="site">AI Pulse · CHG Tickets</span>
+            <span class="crumb">/ Lists / <b>CHG0049182</b></span>
+            <span class="real-badge">SYNCED</span>
+          </div>
+          <div class="sp-body">
+            <div class="sp-list-toolbar">
+              <button class="btn-sp primary">+ New</button>
+              <button class="btn-sp">Edit in grid view</button>
+              <button class="btn-sp">Share</button>
+              <button class="btn-sp">Export</button>
+              <span class="filter-info">▸ Detail view · 1 item</span>
+            </div>
+            <div class="sp-detail-view">
+              <div class="sp-detail-head">
+                <span class="id">CHG0049182</span>
+                <span class="title">Acquisition decision orchestrator · durable messaging enablement</span>
+                <span class="state">Implement</span>
+              </div>
+              <div class="sp-fields">
+                <div class="sp-fld"><div class="lbl">Application</div><div class="val mono">acquisition-decision-orchestrator</div></div>
+                <div class="sp-fld"><div class="lbl">Foundation</div><div class="val mono">CDE2 → CDE3</div></div>
+                <div class="sp-fld"><div class="lbl">Risk classification</div><div class="val">Low (auto)</div></div>
+                <div class="sp-fld"><div class="lbl">Linked story</div><div class="val mono">ACQ-3847</div></div>
+                <div class="sp-fld"><div class="lbl">Release page</div><div class="val mono" style="color:var(--sp-blue)">/sites/AIPulseReleases/SitePages/Release-2026-06-08</div></div>
+                <div class="sp-fld"><div class="lbl">Deploy window</div><div class="val">June 8 · 01:00–01:30 AM ET</div></div>
+              </div>
+
+              <div class="work-notes-h">▸ Work Notes (auto-appended by Studio agent)</div>
+              <div id="snB-notes">
+                <div class="work-note agent">
+                  <div class="who-w"><span class="av-w agent">RP</span><span class="nm-w">ReleasePilot (Studio)</span><span class="ts-w">2026-06-07 23:16:04</span></div>
+                  CHG created from Jira ACQ-3847. Release page authored. Risk packet attached. State → <b>Assess</b>.
+                </div>
+                <div class="work-note">
+                  <div class="who-w"><span class="av-w human">AC</span><span class="nm-w">Anisha C (Manager)</span><span class="ts-w">2026-06-07 23:42:11</span></div>
+                  Approved via Teams Adaptive Card.
+                </div>
+                <div class="work-note agent">
+                  <div class="who-w"><span class="av-w agent">RP</span><span class="nm-w">ReleasePilot (Studio)</span><span class="ts-w">2026-06-07 23:42:18</span></div>
+                  Manager approval received. CAB auto-approved (low-risk). State → <b>Implement</b>.
+                </div>
+                <div class="work-note">
+                  <div class="who-w"><span class="av-w human">SM</span><span class="nm-w">Sai Mohit (UDeploy)</span><span class="ts-w">2026-06-08 01:32:14</span></div>
+                  Deployed to CDE2 successfully · build <code>20260608.1.42</code>.
+                </div>
+                <!-- Watch handoff note appears via JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 4: WATCH DASHBOARD -->
+    <div class="scene scene4" data-scene="4">
+      <div class="scene-header">
+        <div class="scene-tag">▸ Scene 04 · ReleaseWatch dashboard · SharePoint list view</div>
+        <div class="scene-title">Every CHG ReleaseWatch is shepherding · status at a glance.</div>
+        <div class="scene-sub">A SharePoint list with a custom view ("Active Watches") shows every CHG the agent is currently watching, color-coded by state. Real list, queryable, exportable.</div>
+      </div>
+      <div class="scene-body">
+        <div class="surface-label"><span>▸ SharePoint List · Active Watches</span><span class="sim-tag">SHAREPOINT LIST</span></div>
+        <div class="sp">
+          <div class="sp-head">
+            <span class="logo">SPO</span>
+            <span class="site">AI Pulse · ReleaseWatch</span>
+            <span class="crumb">/ Lists / Active Watches / <b>All items</b></span>
+            <span class="real-badge">LIVE · 9 items</span>
+          </div>
+          <div class="sp-body">
+            <div class="sp-list-toolbar">
+              <button class="btn-sp primary">+ New</button>
+              <button class="btn-sp">Edit in grid view</button>
+              <button class="btn-sp">Filter</button>
+              <button class="btn-sp">Group: Watch State</button>
+              <span class="filter-info">▸ View · Active Watches · sorted by state</span>
+            </div>
+            <table class="sp-list-tbl">
+              <thead>
+                <tr><th>CHG ID</th><th>Application</th><th>Watch State</th><th>Started</th><th>Last Check</th><th>Notes</th></tr>
+              </thead>
+              <tbody>
+                <tr class="highlight">
+                  <td><a class="id-link">CHG0049182</a></td>
+                  <td><code>acquisition-decision-orch</code></td>
+                  <td><span class="state-badge open">L3 · INC OPEN</span></td>
+                  <td>01:32 AM</td>
+                  <td>4:12 AM</td>
+                  <td>RCA attached · INC0228994</td>
+                </tr>
+                <tr>
+                  <td><a class="id-link">CHG0049183</a></td>
+                  <td><code>payment-gateway-router</code></td>
+                  <td><span class="state-badge review">L2 · DRIFT</span></td>
+                  <td>2:42 AM</td>
+                  <td>4:12 AM</td>
+                  <td>Response time +28%</td>
+                </tr>
+                <tr>
+                  <td><a class="id-link">CHG0049180</a></td>
+                  <td><code>customer-profile-svc</code></td>
+                  <td><span class="state-badge done">L1 · CLEAR</span></td>
+                  <td>11:50 PM</td>
+                  <td>4:10 AM</td>
+                  <td>All clear · 4h22m</td>
+                </tr>
+                <tr>
+                  <td><a class="id-link">CHG0049181</a></td>
+                  <td><code>notification-dispatcher</code></td>
+                  <td><span class="state-badge done">L1 · CLEAR</span></td>
+                  <td>10:04 PM</td>
+                  <td>4:08 AM</td>
+                  <td>All clear · 6h08m</td>
+                </tr>
+                <tr>
+                  <td><a class="id-link">CHG0049184</a></td>
+                  <td><code>rewards-calc-engine</code></td>
+                  <td><span class="state-badge done">L1 · CLEAR</span></td>
+                  <td>01:28 AM</td>
+                  <td>4:11 AM</td>
+                  <td>All clear · 2h44m</td>
+                </tr>
+                <tr>
+                  <td><a class="id-link">CHG0049185</a></td>
+                  <td><code>offer-eligibility-api</code></td>
+                  <td><span class="state-badge done">L1 · CLEAR</span></td>
+                  <td>01:01 AM</td>
+                  <td>4:11 AM</td>
+                  <td>All clear · 3h11m</td>
+                </tr>
+                <tr>
+                  <td><a class="id-link">CHG0049186</a></td>
+                  <td><code>audit-recorder</code></td>
+                  <td><span class="state-badge done">L1 · CLEAR</span></td>
+                  <td>11:10 PM</td>
+                  <td>4:12 AM</td>
+                  <td>All clear · 5h02m</td>
+                </tr>
+                <tr>
+                  <td><a class="id-link">CHG0049187</a></td>
+                  <td><code>partner-callback-svc</code></td>
+                  <td><span class="state-badge done">L1 · CLEAR</span></td>
+                  <td>02:34 AM</td>
+                  <td>4:12 AM</td>
+                  <td>All clear · 1h38m</td>
+                </tr>
+                <tr>
+                  <td><a class="id-link">CHG0049188</a></td>
+                  <td><code>credit-app-router</code></td>
+                  <td><span class="state-badge done">L1 · CLEAR</span></td>
+                  <td>03:18 AM</td>
+                  <td>4:12 AM</td>
+                  <td>All clear · 0h54m</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 5: L2 DRIFT in TEAMS -->
+    <div class="scene scene5" data-scene="5">
+      <div class="scene-header">
+        <div class="scene-tag">▸ Scene 05 · L2 amber · Studio agent reasons in Teams</div>
+        <div class="scene-title">The agent's reasoning is right there in the Teams thread.</div>
+        <div class="scene-sub">No separate "agent log" UI needed. Studio's generative response IS the reasoning trace — streaming text in a Teams message. Jury watches the agent think out loud.</div>
+      </div>
+      <div class="scene-body">
+        <div class="surface-label"><span>▸ Microsoft Teams · #release-watch-acquisition · L2 alert</span><span class="real-tag">REAL TEAMS</span></div>
+        <div class="teams">
+          <div class="teams-head">
+            <span class="logo">TEAMS</span>
+            <span class="channel"><b># release-watch-acquisition</b></span>
+            <span class="real-badge">LIVE</span>
+          </div>
+          <div class="teams-body" id="teamsB5"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 6: L3 RCA in TEAMS -->
+    <div class="scene scene6" data-scene="6">
+      <div class="scene-header">
+        <div class="scene-tag">▸ Scene 06 · L3 RCA · 4-step reasoning streams in Teams</div>
+        <div class="scene-title">The money moment · real LLM reasoning visible to the jury.</div>
+        <div class="scene-sub">Studio agent synthesizes evidence from SharePoint (past INCs, metrics, bitbucket diff) and streams a coherent RCA with confidence score. INC created as a SharePoint row.</div>
+      </div>
+      <div class="scene-body">
+        <div class="surface-label"><span>▸ Microsoft Teams · #release-watch-acquisition · L3 RCA</span><span class="real-tag">REAL TEAMS · STUDIO</span></div>
+        <div class="teams">
+          <div class="teams-head">
+            <span class="logo">TEAMS</span>
+            <span class="channel"><b># release-watch-acquisition</b></span>
+            <span class="real-badge">LIVE</span>
+          </div>
+          <div class="teams-body" id="teamsB6"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 7: ADAPTIVE CARD -->
+    <div class="scene scene7" data-scene="7">
+      <div class="scene-header">
+        <div class="scene-tag">▸ Scene 07 · Real Adaptive Card · real human handoff</div>
+        <div class="scene-title">The handoff happens on a real Microsoft surface. Not a mock.</div>
+        <div class="scene-sub">Studio posts an Adaptive Card with action buttons. Human clicks Acknowledge in real Teams. Studio receives the action callback, adjusts cadence, continues watching for recovery.</div>
+      </div>
+      <div class="scene-body">
+        <div class="surface-label"><span>▸ Microsoft Teams · #release-watch-acquisition · Adaptive Card</span><span class="real-tag">REAL TEAMS</span></div>
+        <div class="teams">
+          <div class="teams-head">
+            <span class="logo">TEAMS</span>
+            <span class="channel"><b># release-watch-acquisition</b></span>
+            <span class="real-badge">LIVE</span>
+          </div>
+          <div class="teams-body" id="teamsB7"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="foot-hint">← → arrow keys · R to replay · 0-7 to jump</div>
+
+<script>
+let currentScene = 0;
+const totalScenes = 8;
+
+function goScene(n){
+  if(n<0||n>=totalScenes) return;
+  document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.sn-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.scene[data-scene="${n}"]`).classList.add('active');
+  document.querySelector(`.sn-btn[data-scene="${n}"]`).classList.add('active');
+  currentScene = n;
+  setTimeout(()=>playScene(n), 100);
+}
+
+function playScene(n){
+  if(n===1) playScene1();
+  if(n===3) playScene3();
+  if(n===5) playScene5();
+  if(n===6) playScene6();
+  if(n===7) playScene7();
+}
+
+function addTeamsMsg(container, opts){
+  const m = document.createElement('div');
+  m.className = 'teams-msg';
+  const av = opts.av || 'bot';
+  const avLab = opts.avLab || 'RP';
+  const nm = opts.nm || 'ReleasePilot';
+  const isBot = opts.isBot !== false;
+  const ts = opts.ts || 'just now';
+  m.innerHTML = `
+    <div class="av-t ${av}">${avLab}</div>
+    <div class="body-t">
+      <div class="from-line">
+        <span class="nm-t">${nm}</span>
+        ${isBot ? '<span class="bot-tag">BOT</span>' : ''}
+        <span class="ts-t">${ts}</span>
+      </div>
+      <div class="content">${opts.content}</div>
+    </div>`;
+  container.appendChild(m);
+  requestAnimationFrame(()=>m.classList.add('show'));
+  container.scrollTop = container.scrollHeight;
+  return m;
+}
+
+/* SCENE 1: Jira comment → Teams */
+function playScene1(){
+  const teams = document.getElementById('teamsB1');
+  teams.innerHTML='';
+  document.getElementById('jiraB-arrow').style.visibility='hidden';
+  document.getElementById('jira1B-ta').value='@release-pilot go';
+  const submit = document.getElementById('jira1B-submit');
+  submit.onclick = ()=>{
+    if(!document.querySelector('.scene1.active')) return;
+    const body = document.querySelector('#jiraB1');
+    const oldTrigger = body.querySelector('.comment.trigger');
+    if(oldTrigger) oldTrigger.remove();
+    const c = document.createElement('div');
+    c.className='comment trigger';
+    c.innerHTML = `<div class="who"><span class="av">VV</span><span class="nm-c">Vamshi V</span><span class="ts">just now</span></div><span class="mention">@release-pilot</span> go`;
+    body.querySelector('.jira-section-h:last-of-type').after(c);
+    document.getElementById('jira1B-ta').value='';
+    setTimeout(()=>{
+      if(!document.querySelector('.scene1.active')) return;
+      document.getElementById('jiraB-arrow').style.visibility='visible';
+    }, 700);
+    setTimeout(()=>{
+      if(!document.querySelector('.scene1.active')) return;
+      addTeamsMsg(teams,{
+        av:'flow', avLab:'PA', nm:'Power Automate (Workflow)', isBot:true, ts:'01:14',
+        content:`<b>🔔 New release trigger from Jira</b>
+          <div class="agent-step">
+            <b>Source:</b> ACQ-3847 · Vamshi V<br>
+            <b>Fix Version:</b> 2026.06.08<br>
+            <b>Comment:</b> @release-pilot go
+          </div>
+          Routed to ReleasePilot agent for processing.`
+      });
+    }, 1400);
+    setTimeout(()=>{
+      if(!document.querySelector('.scene1.active')) return;
+      addTeamsMsg(teams,{
+        av:'bot', avLab:'RP', nm:'ReleasePilot', isBot:true, ts:'01:14',
+        content:`Acknowledged. Working on release <code>2026.06.08</code> for <code>acquisition-decision-orchestrator</code>.<br><br>
+          Plan:
+          <ul>
+            <li>Reading Jira story + 4 subtasks ✓</li>
+            <li>Pulling past INCs from SharePoint INCs list...</li>
+            <li>Resolving downstream apps from service catalog list...</li>
+            <li>Synthesizing risk packet (Copilot Studio reasoning)</li>
+            <li>Publishing release page → SharePoint</li>
+            <li>Creating CHG record → SharePoint list</li>
+            <li>Posting approval request → this channel</li>
+          </ul>
+          ETA ~90 seconds.`
+      });
+    }, 2600);
+    setTimeout(()=>{
+      if(!document.querySelector('.scene1.active')) return;
+      addTeamsMsg(teams,{
+        av:'bot', avLab:'RP', nm:'ReleasePilot', isBot:true, ts:'01:15',
+        content:`✓ Risk packet assembled · 3 past INCs reviewed · 2 downstream apps mapped<br>
+          ✓ Release page published → <a>/sites/AIPulseReleases/SitePages/Release-2026-06-08.aspx</a><br>
+          ✓ CHG record created → <a>CHG0049182</a> (state: <b>Assess</b>)<br><br>
+          Awaiting approval to advance CHG → <b>Implement</b>. Approval card incoming...`
+      });
+      setTimeout(()=>{
+        if(document.querySelector('.scene1.active')) goScene(2);
+      }, 3200);
+    }, 4400);
+  };
+}
+
+/* SCENE 3: deploy comment → handoff to ReleaseWatch */
+function playScene3(){
+  const notes = document.getElementById('snB-notes');
+  const old = notes.querySelector('.work-note.watch-handoff');
+  if(old) old.remove();
+  setTimeout(()=>{
+    if(!document.querySelector('.scene3.active')) return;
+    const rw = document.createElement('div');
+    rw.className='work-note agent watch-handoff';
+    rw.style.borderLeftColor='#FFCE32';
+    rw.style.background='#fffbe5';
+    rw.innerHTML = `<div class="who-w"><span class="av-w agent" style="background:linear-gradient(135deg,#FFCE32,#E0B520);color:#0a0e14">RW</span><span class="nm-w" style="color:#c2410c">ReleaseWatch (Studio)</span><span class="ts-w">2026-06-08 01:32:18</span></div>Deploy comment detected via Power Automate flow. Loaded risk packet from SharePoint page. Watching <code>acquisition-decision-orchestrator</code> + <code>decision-async-consumer</code>. L1 hourly reports to <code>#release-watch-acquisition</code> begin · next at 02:32 AM.`;
+    notes.appendChild(rw);
+  }, 800);
+}
+
+/* SCENE 5: L2 reasoning in Teams */
+function playScene5(){
+  const teams = document.getElementById('teamsB5');
+  teams.innerHTML='';
+  setTimeout(()=>{
+    if(!document.querySelector('.scene5.active')) return;
+    addTeamsMsg(teams,{
+      av:'agent', avLab:'RW', nm:'ReleaseWatch', isBot:true, ts:'02:08',
+      content:`<b>⚠️ L2 amber · drift detected · CHG0049182</b>
+        <div class="agent-step">
+          <b>App:</b> acquisition-decision-orchestrator (post-deploy)<br>
+          <b>Observation:</b> Producer healthy. Consumer (decision-async-consumer) throughput <code>↓78%</code> vs yesterday · latency <code>↑340%</code> vs baseline.
+        </div>
+        Reasoning over deltas now...
+        <div class="reasoning-stream" id="l2-stream"></div>`
+    });
+    const stream = document.getElementById('l2-stream');
+    const lines = [
+      {ts:'02:08:14', lvl:'INFO', msg:'Pulling metrics from SharePoint Metrics list · 4h window'},
+      {ts:'02:08:15', lvl:'INFO', msg:'Producer rate <code>142/min</code> · yesterday <code>139/min</code> · within tolerance'},
+      {ts:'02:08:16', lvl:'INFO', msg:'Producer CPU/memory <code>22%/41%</code> · clean · 0 ERROR logs'},
+      {ts:'02:08:17', lvl:'WARN', msg:'Consumer rate <code>31/min</code> · yesterday <code>142/min</code> · <b>down 78%</b>'},
+      {ts:'02:08:17', lvl:'WARN', msg:'Consumer latency <code>2.4s</code> · yesterday <code>0.55s</code> · <b>up 340%</b>'},
+      {ts:'02:08:18', lvl:'AGENT', msg:'Cross-app pattern · producer healthy, consumer starved'},
+      {ts:'02:08:19', lvl:'AGENT', msg:'Reading release page: <code>+15ms producer latency</code> expected · <b>340% consumer increase NOT explained</b>'},
+      {ts:'02:08:20', lvl:'AGENT', msg:'Risk packet predicted <code>downstream_consumer_starvation</code> · <b>matches</b>'},
+      {ts:'02:08:21', lvl:'AGENT', msg:'No active INC in window · severity threshold crossed · <b>escalating to L2</b>'},
+    ];
+    lines.forEach((l,i)=>{
+      setTimeout(()=>{
+        if(!document.querySelector('.scene5.active')) return;
+        const d = document.createElement('div');
+        d.className='step';
+        d.innerHTML = `<span class="ts">${l.ts}</span><span class="lvl ${l.lvl}">${l.lvl}</span><span class="msg">${l.msg}</span>`;
+        stream.appendChild(d);
+        requestAnimationFrame(()=>d.classList.add('show'));
+        teams.scrollTop = teams.scrollHeight;
+      }, 600 + i*350);
+    });
+    setTimeout(()=>{
+      if(!document.querySelector('.scene5.active')) return;
+      addTeamsMsg(teams,{
+        av:'agent', avLab:'RW', nm:'ReleaseWatch', isBot:true, ts:'02:08',
+        content:`<b>L2 alert posted.</b> 15-minute update cadence begins · email sent to <code>dl-acquisition-oncall@aipulse.onmicrosoft.com</code>. Next update at 02:23 AM unless pattern changes.`
+      });
+      setTimeout(()=>{
+        if(document.querySelector('.scene5.active')) goScene(6);
+      }, 2400);
+    }, 600 + lines.length*350 + 800);
+  }, 200);
+}
+
+/* SCENE 6: L3 RCA in Teams */
+function playScene6(){
+  const teams = document.getElementById('teamsB6');
+  teams.innerHTML='';
+  setTimeout(()=>{
+    if(!document.querySelector('.scene6.active')) return;
+    addTeamsMsg(teams,{
+      av:'agent', avLab:'RW', nm:'ReleaseWatch', isBot:true, ts:'02:38',
+      content:`<b>🔴 L3 escalation · pattern persisting + worsening</b><br>
+        Consumer rate dropped further to <code>22/min</code>. Initiating RCA generation · 4 evidence streams · Studio reasoning.
+        <div class="reasoning-stream" id="l3-stream"></div>`
+    });
+    const stream = document.getElementById('l3-stream');
+    const lines = [
+      {ts:'02:38:04', lvl:'RCA', msg:'<b>Step 1/4</b> · searching SharePoint INCs list by symptom similarity (last 180d)'},
+      {ts:'02:38:06', lvl:'RCA', msg:'Match · <code>INC0218763</code> 2026-04-12 · "rmq memory_high_watermark · backpressure cascade"'},
+      {ts:'02:38:06', lvl:'RCA', msg:'Match · <code>INC0223440</code> 2026-05-29 · "same root cause, sibling app"'},
+      {ts:'02:38:07', lvl:'AGENT', msg:'Pattern similarity HIGH · 2 priors for this failure mode'},
+      {ts:'02:38:08', lvl:'RCA', msg:'<b>Step 2/4</b> · querying live RabbitMQ metrics from Metrics list'},
+      {ts:'02:38:10', lvl:'RCA', msg:'Node 1 memory <code>92%</code> · <b>HIGH WATERMARK EXCEEDED</b>'},
+      {ts:'02:38:10', lvl:'RCA', msg:'Backpressure flag <code>active</code> since 01:47 AM · producers throttled'},
+      {ts:'02:38:11', lvl:'AGENT', msg:'Live evidence confirms hypothesis from past INCs'},
+      {ts:'02:38:12', lvl:'RCA', msg:'<b>Step 3/4</b> · reading bitbucket diff from pre-seeded SharePoint diff list'},
+      {ts:'02:38:14', lvl:'RCA', msg:'Standout commit <code>a7f3c19</code> · <code>+messageProps.setPersistent(true)</code> in <code>DecisionMessagePublisher.java</code>'},
+      {ts:'02:38:15', lvl:'AGENT', msg:'Persistent rmq messages take ~3x longer to enqueue, consume more memory than transient'},
+      {ts:'02:38:16', lvl:'AGENT', msg:'At post-deploy traffic spike: pushed cluster past watermark · <b>plausible cause confirmed</b>'},
+      {ts:'02:38:17', lvl:'RCA', msg:'<b>Step 4/4</b> · synthesizing consolidated RCA · confidence calibration'},
+      {ts:'02:38:19', lvl:'RCA', msg:'Confidence: <code>0.81</code>'},
+      {ts:'02:38:20', lvl:'AGENT', msg:'Creating INC row in SharePoint INC list → <code>INC0228994</code>'},
+      {ts:'02:38:21', lvl:'AGENT', msg:'Posting Adaptive Card with RCA + action buttons to this channel...'},
+    ];
+    lines.forEach((l,i)=>{
+      setTimeout(()=>{
+        if(!document.querySelector('.scene6.active')) return;
+        const d = document.createElement('div');
+        d.className='step';
+        d.innerHTML = `<span class="ts">${l.ts}</span><span class="lvl ${l.lvl}">${l.lvl}</span><span class="msg">${l.msg}</span>`;
+        stream.appendChild(d);
+        requestAnimationFrame(()=>d.classList.add('show'));
+        teams.scrollTop = teams.scrollHeight;
+      }, 400 + i*280);
+    });
+    setTimeout(()=>{
+      if(document.querySelector('.scene6.active')) goScene(7);
+    }, 400 + lines.length*280 + 2400);
+  }, 200);
+}
+
+/* SCENE 7: Adaptive Card */
+function playScene7(){
+  const teams = document.getElementById('teamsB7');
+  teams.innerHTML='';
+  setTimeout(()=>{
+    if(!document.querySelector('.scene7.active')) return;
+    addTeamsMsg(teams,{
+      av:'agent', avLab:'RW', nm:'ReleaseWatch', isBot:true, ts:'02:38',
+      content:`<div class="adaptive">
+        <div class="alert-bar">
+          <span>▸ L3 · INC CREATED · ACTION REQUIRED</span>
+          <span class="conf">CONFIDENCE 81%</span>
+        </div>
+        <div class="card-content">
+          <div class="card-title">RabbitMQ memory exhaustion suspected · CHG0049182</div>
+          <div class="meta-grid">
+            <div class="k">App</div><div class="v"><code>acquisition-decision-orchestrator</code></div>
+            <div class="k">Deployed</div><div class="v">01:00 AM CDE2 · build <code>20260608.1.42</code></div>
+            <div class="k">Symptom</div><div class="v">Consumer throughput ↓78% · decision latency ↑340%</div>
+            <div class="k">Live metric</div><div class="v">RabbitMQ memory <code>92%</code> · backpressure active since 01:47</div>
+            <div class="k">Suspect change</div><div class="v"><code>+messageProps.setPersistent(true)</code> · commit <code>a7f3c19</code></div>
+            <div class="k">Similar past INCs</div><div class="v"><a>INC0218763</a> · <a>INC0223440</a></div>
+            <div class="k">This INC</div><div class="v"><a>INC0228994</a> — full RCA in description</div>
+          </div>
+        </div>
+        <div class="acts-t">
+          <button class="teams-btn primary">Acknowledge — I'm on it</button>
+          <button class="teams-btn">Downgrade to L2</button>
+          <button class="teams-btn">Open INC</button>
+        </div>
+      </div>`
+    });
+  }, 300);
+  setTimeout(()=>{
+    if(!document.querySelector('.scene7.active')) return;
+    addTeamsMsg(teams,{
+      av:'human', avLab:'AC', nm:'Anisha C · On-call', isBot:false, ts:'02:39',
+      content:`Confirmed. Rolling back the persistent flag now. ETA 5 min. Keeping INC0228994 open for post-mortem.`
+    });
+  }, 2400);
+  setTimeout(()=>{
+    if(!document.querySelector('.scene7.active')) return;
+    addTeamsMsg(teams,{
+      av:'agent', avLab:'RW', nm:'ReleaseWatch', isBot:true, ts:'02:39',
+      content:`Acknowledged. Cadence relaxed to 5-min updates. INC0228994 remains open. Watching for memory recovery · I'll notify when consumer throughput returns to baseline.`
+    });
+  }, 4200);
+}
+
+/* NAV */
+document.querySelectorAll('.sn-btn').forEach(btn=>btn.addEventListener('click',()=>goScene(parseInt(btn.dataset.scene))));
+document.querySelectorAll('.scene-card').forEach(card=>card.addEventListener('click',()=>goScene(parseInt(card.dataset.jump))));
+document.getElementById('next').addEventListener('click',()=>goScene(Math.min(currentScene+1, totalScenes-1)));
+document.getElementById('replay').addEventListener('click',()=>playScene(currentScene));
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') goScene(Math.min(currentScene+1, totalScenes-1));
+  else if(e.key==='ArrowLeft') goScene(Math.max(currentScene-1, 0));
+  else if(e.key==='r' || e.key==='R') playScene(currentScene);
+  else if(['0','1','2','3','4','5','6','7'].includes(e.key)) goScene(parseInt(e.key));
+});
+</script>
+</body>
+</html>

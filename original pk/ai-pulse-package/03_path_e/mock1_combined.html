@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReleasePilot + ReleaseWatch — Live Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --syf-yellow:#FFCE32;
+  --syf-yellow-deep:#E0B520;
+  --syf-yellow-soft:rgba(255,206,50,.12);
+  --syf-navy:#002856;
+  --syf-black:#0a0e14;
+  --bg:#0a0e14;
+  --panel:#131820;
+  --panel2:#1a2230;
+  --panel3:#222b39;
+  --border:#2a3340;
+  --border-bright:#3a4757;
+  --ink:#f0f2f5;
+  --dim:#9da9b8;
+  --faint:#6b7785;
+  --danger:#ff6b6b;
+  --warning:#ffb454;
+  --success:#7fd99b;
+  --pilot:#5b8fc7;
+  --watch:#FFCE32;
+  --jira-blue:#0052cc;
+  --conf-blue:#0747a6;
+  --snow-green:#293e40;
+  --font-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--font-sans);height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased}
+
+.app{display:grid;grid-template-rows:auto 1fr;height:100vh}
+
+/* top bar */
+.topbar{background:var(--panel);border-bottom:1px solid var(--border);padding:9px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.brand .dot{width:9px;height:9px;background:var(--syf-yellow);border-radius:50%}
+.brand .nm{font-weight:700;font-size:13px;letter-spacing:-.01em}
+.brand .sub{font-family:var(--font-mono);font-size:9.5px;color:var(--faint);letter-spacing:.08em;text-transform:uppercase;margin-left:6px}
+.brand .platform-badge{font-family:var(--font-mono);font-size:9px;letter-spacing:.04em;color:var(--syf-yellow);background:var(--syf-yellow-soft);border:1px solid rgba(255,206,50,.3);border-radius:4px;padding:3px 8px;margin-left:10px;white-space:nowrap}
+.scene-nav{display:flex;gap:5px;flex:1;justify-content:center;flex-wrap:wrap}
+.sn-btn{background:var(--panel2);border:1px solid var(--border);color:var(--dim);font-family:var(--font-mono);font-size:9.5px;letter-spacing:.05em;padding:6px 10px;border-radius:5px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px;text-transform:uppercase}
+.sn-btn:hover{border-color:var(--border-bright);color:var(--ink)}
+.sn-btn.active{background:var(--syf-yellow-soft);border-color:var(--syf-yellow);color:var(--syf-yellow)}
+.sn-btn .n{font-weight:600;opacity:.6}
+.sn-btn.active .n{opacity:1}
+.sn-btn.phase-pilot.active{background:rgba(91,143,199,.15);border-color:var(--pilot);color:var(--pilot)}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.ctrl{background:transparent;border:1px solid var(--border);color:var(--dim);font-family:var(--font-mono);font-size:9.5px;letter-spacing:.05em;padding:6px 10px;border-radius:5px;cursor:pointer;text-transform:uppercase}
+.ctrl:hover{border-color:var(--syf-yellow);color:var(--syf-yellow)}
+.ctrl.primary{background:var(--syf-yellow);color:var(--syf-black);border-color:var(--syf-yellow);font-weight:700}
+.ctrl.primary:hover{background:var(--syf-yellow-deep)}
+
+.stage{position:relative;overflow:hidden}
+.scene{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;flex-direction:column;padding:18px 22px;overflow-y:auto}
+.scene.active{opacity:1;pointer-events:auto}
+.scene-header{margin-bottom:14px;flex-shrink:0}
+.scene-tag{font-family:var(--font-mono);font-size:10px;color:var(--syf-yellow);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:10px}
+.scene-tag::before{content:"";width:18px;height:1px;background:var(--syf-yellow)}
+.scene-tag.pilot{color:var(--pilot)}
+.scene-tag.pilot::before{background:var(--pilot)}
+.scene-title{font-size:21px;font-weight:700;letter-spacing:-.01em}
+.scene-sub{font-size:13px;color:var(--dim);margin-top:4px;max-width:80ch}
+.scene-body{flex:1;display:grid;gap:14px;min-height:0}
+
+/* === OVERVIEW === */
+.scene0 .scene-body{grid-template-columns:1fr;align-items:center;justify-content:center}
+.overview{max-width:1000px;margin:0 auto}
+.ov-hero{margin-bottom:24px}
+.ov-hero h2{font-size:38px;font-weight:800;line-height:1.05;letter-spacing:-.02em;margin-bottom:12px}
+.ov-hero h2 .y{color:var(--syf-yellow)}
+.ov-hero p{font-size:15px;color:var(--dim);max-width:64ch;line-height:1.55}
+.phase-marker{display:flex;align-items:center;gap:10px;margin:24px 0 14px;font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.phase-marker.pilot{color:var(--pilot)}
+.phase-marker.watch{color:var(--syf-yellow)}
+.phase-marker .line{flex:1;height:1px;background:currentColor;opacity:.4}
+.scene-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.scene-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:.15s}
+.scene-card:hover{border-color:var(--syf-yellow);transform:translateY(-2px)}
+.scene-card.pilot:hover{border-color:var(--pilot)}
+.scene-card .ns{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;margin-bottom:5px;color:var(--syf-yellow)}
+.scene-card.pilot .ns{color:var(--pilot)}
+.scene-card .nt{font-weight:600;font-size:13.5px;color:var(--ink);margin-bottom:5px;line-height:1.3}
+.scene-card .nd{font-size:11.5px;color:var(--dim);line-height:1.5}
+.start-line{margin-top:24px;display:flex;align-items:center;justify-content:center;gap:14px;color:var(--faint);font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase}
+.start-line button{background:var(--syf-yellow);color:var(--syf-black);border:none;font-weight:700;padding:10px 20px;border-radius:7px;cursor:pointer;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em}
+
+/* === JIRA UI (Scene 1) === */
+.jira{background:#1d2125;border:1px solid #34373c;border-radius:10px;display:flex;flex-direction:column;min-height:0;overflow:hidden;height:100%}
+.jira-head{background:#22272b;padding:8px 14px;border-bottom:1px solid #34373c;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.jira-head .logo{background:var(--jira-blue);color:#fff;font-weight:800;padding:3px 8px;border-radius:3px;font-size:11px;font-family:var(--font-sans)}
+.jira-head .breadcrumb{font-size:11px;color:#9aa1a8;font-family:var(--font-sans)}
+.jira-head .breadcrumb b{color:#fff}
+.jira-body{padding:18px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.jira-story-head{display:flex;align-items:center;gap:10px}
+.jira-tag{background:#2a3138;padding:2px 8px;border-radius:3px;font-size:10px;font-family:var(--font-mono);color:#9aa1a8;border:1px solid #3a4148}
+.jira-tag.story{background:rgba(127,217,155,.15);color:#7fd99b;border-color:rgba(127,217,155,.3)}
+.jira-tag.done{background:rgba(0,82,204,.2);color:#5b8fc7;border-color:rgba(91,143,199,.3)}
+.jira-title{font-size:18px;font-weight:600;color:#fff;margin-top:6px}
+.jira-meta{display:grid;grid-template-columns:120px 1fr;gap:8px 14px;font-size:12px;color:#9aa1a8;padding:12px 0;border-top:1px solid #34373c;border-bottom:1px solid #34373c}
+.jira-meta .k{font-weight:500}
+.jira-meta .v{color:#dadce0}
+.jira-meta .v.link{color:#5b8fc7}
+.jira-section{margin-top:6px}
+.jira-section-h{font-size:11px;font-weight:600;color:#9aa1a8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.subtask{padding:8px 10px;border:1px solid #34373c;border-radius:5px;margin-bottom:5px;display:flex;align-items:center;gap:9px;font-size:12px;color:#dadce0;background:#22272b}
+.subtask .id{font-family:var(--font-mono);color:#5b8fc7;font-weight:500;font-size:11px}
+.subtask .nm{flex:1}
+.subtask .status{font-size:10px;padding:2px 7px;border-radius:3px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.04em}
+.subtask .status.done{background:rgba(127,217,155,.15);color:#7fd99b}
+.subtask .status.progress{background:rgba(91,143,199,.15);color:#5b8fc7}
+.jira-comments{margin-top:6px}
+.comment{padding:10px 12px;background:#22272b;border-radius:5px;margin-bottom:8px;border-left:2px solid #34373c;font-size:12.5px;color:#dadce0}
+.comment .who{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.comment .av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#5b8fc7,#3070b8);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff}
+.comment .nm-c{font-weight:500;color:#fff;font-size:11.5px}
+.comment .ts{font-family:var(--font-mono);font-size:9.5px;color:#888;margin-left:auto}
+.comment.trigger{border-left:3px solid var(--syf-yellow);background:rgba(255,206,50,.04);animation:flashIn .8s ease both}
+.comment.trigger .mention{color:var(--syf-yellow);font-weight:600}
+@keyframes flashIn{0%{background:rgba(255,206,50,.25)}100%{background:rgba(255,206,50,.04)}}
+.jira-comments-input{margin-top:10px}
+.jira-comments-input textarea{width:100%;background:#22272b;border:1px solid #34373c;border-radius:5px;padding:9px 12px;color:#dadce0;font-family:var(--font-sans);font-size:12.5px;resize:none;min-height:60px}
+.jira-comments-input .actions{display:flex;justify-content:flex-end;margin-top:8px;gap:6px}
+.jira-btn{font-size:11.5px;padding:6px 14px;border-radius:4px;border:1px solid #34373c;background:transparent;color:#dadce0;cursor:pointer;font-family:var(--font-sans)}
+.jira-btn.primary{background:var(--jira-blue);color:#fff;border-color:var(--jira-blue);font-weight:500}
+.jira-btn.primary:hover{background:#0747a6}
+.agent-response{background:rgba(91,143,199,.08);border:1px solid rgba(91,143,199,.3);border-radius:5px;padding:12px 14px;font-size:12.5px;color:#dadce0;margin-top:10px;border-left:3px solid var(--pilot);animation:fadeUp .4s ease both;opacity:0}
+.agent-response.show{opacity:1}
+.agent-response .nm-r{color:var(--pilot);font-weight:600;font-size:11.5px;margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.agent-response .nm-r::before{content:"●";font-size:9px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* === CONFLUENCE UI (Scene 2) === */
+.conf{background:#fff;border-radius:10px;display:flex;flex-direction:column;min-height:0;overflow:hidden;height:100%;color:#172b4d}
+.conf-head{background:#fafbfc;padding:8px 16px;border-bottom:1px solid #dfe1e6;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.conf-head .logo{background:var(--conf-blue);color:#fff;font-weight:800;padding:3px 8px;border-radius:3px;font-size:11px;font-family:var(--font-sans)}
+.conf-head .breadcrumb{font-size:11px;color:#6b778c;font-family:var(--font-sans)}
+.conf-head .breadcrumb b{color:#172b4d}
+.conf-body{padding:24px 30px;flex:1;overflow-y:auto;color:#172b4d}
+.conf-page-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.conf-author{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#6b778c;margin-bottom:18px}
+.conf-author .av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--syf-yellow),var(--syf-yellow-deep));display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--syf-black)}
+.conf h1.conf-title{font-size:26px;color:#172b4d;font-weight:600;letter-spacing:-.01em;line-height:1.2}
+.conf h2{font-size:17px;color:#172b4d;font-weight:600;margin:22px 0 10px;padding-bottom:5px;border-bottom:1px solid #dfe1e6}
+.conf h3{font-size:14px;color:#172b4d;font-weight:600;margin:14px 0 6px}
+.conf p{font-size:13.5px;line-height:1.6;color:#42526e;margin-bottom:10px;max-width:none}
+.conf .info-box{background:#deebff;border-left:3px solid #0052cc;padding:10px 14px;border-radius:3px;margin:12px 0;font-size:12.5px;color:#172b4d}
+.conf .info-box.warning{background:#fffae6;border-color:#ffab00}
+.conf .info-box.risk{background:#ffebe6;border-color:#de350b}
+.conf .info-box .lbl{font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:10.5px;margin-bottom:4px;color:#172b4d}
+.conf-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}
+.conf-table th{background:#f4f5f7;border:1px solid #dfe1e6;padding:7px 10px;text-align:left;color:#172b4d;font-weight:600;font-size:11px}
+.conf-table td{border:1px solid #dfe1e6;padding:7px 10px;color:#42526e;font-size:12px}
+.conf-table td .badge{padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600;font-family:var(--font-mono)}
+.conf-table td .badge.high{background:#ffebe6;color:#de350b}
+.conf-table td .badge.med{background:#fffae6;color:#974f0c}
+.conf-table td .badge.low{background:#e3fcef;color:#006644}
+.conf ul{list-style:disc;padding-left:22px;margin:8px 0}
+.conf ul li{font-size:13px;color:#42526e;line-height:1.6;margin-bottom:4px}
+.conf code{background:#f4f5f7;padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:11.5px;color:#172b4d}
+.conf .agent-stamp{margin-top:20px;padding:10px 14px;background:rgba(91,143,199,.06);border:1px dashed var(--pilot);border-radius:5px;font-size:11px;color:#42526e;display:flex;align-items:center;gap:8px;font-family:var(--font-mono)}
+.conf .agent-stamp .pill{background:var(--pilot);color:#fff;padding:2px 7px;border-radius:3px;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase}
+
+/* === SERVICENOW UI (Scene 3 — CHG) === */
+.snow{background:#fff;border-radius:10px;display:flex;flex-direction:column;min-height:0;overflow:hidden;height:100%;color:#293e40}
+.snow-head{background:#293e40;color:#fff;padding:9px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.snow-head .logo{background:#62d84e;color:#293e40;font-weight:800;padding:3px 8px;border-radius:3px;font-size:11px}
+.snow-head .crumb{font-size:11.5px;color:#cfd8dc}
+.snow-head .crumb b{color:#fff}
+.snow-body{padding:16px 22px;flex:1;overflow-y:auto;color:#293e40;background:#fafafa}
+.snow-page-h{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #e0e0e0}
+.snow-page-h .chg-id{font-family:var(--font-mono);background:#293e40;color:#fff;padding:4px 10px;border-radius:4px;font-size:13px;font-weight:600}
+.snow-page-h .title{font-size:16px;font-weight:600;flex:1}
+.snow-page-h .state{padding:4px 10px;border-radius:4px;font-size:10.5px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.snow-page-h .state.implement{background:#fff3e0;color:#e65100;border:1px solid #ffb74d}
+.snow-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin-bottom:18px}
+.snow-fld{font-size:12px}
+.snow-fld .lbl{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;font-family:var(--font-mono)}
+.snow-fld .val{color:#293e40;font-weight:500}
+.snow-fld .val.mono{font-family:var(--font-mono);font-size:11px}
+.snow-section{margin-top:18px}
+.snow-section-h{font-size:11.5px;font-weight:700;color:#293e40;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;padding:6px 0;border-bottom:1px solid #e0e0e0}
+.work-note{padding:10px 12px;background:#fff;border:1px solid #e0e0e0;border-radius:4px;margin-bottom:7px;font-size:12px;color:#293e40}
+.work-note .who-w{display:flex;align-items:center;gap:7px;margin-bottom:4px;font-size:10.5px;color:#666}
+.work-note .who-w .av-w{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--syf-yellow),var(--syf-yellow-deep));font-size:8px;font-weight:700;color:var(--syf-black);display:flex;align-items:center;justify-content:center;font-family:var(--font-sans)}
+.work-note .who-w .nm-w{font-weight:600;color:#293e40;font-size:10.5px}
+.work-note .who-w .ts-w{margin-left:auto;font-family:var(--font-mono);font-size:9.5px;color:#888}
+.work-note.agent{border-left:3px solid var(--pilot);background:#f5f8fc}
+.work-note.agent .nm-w{color:var(--pilot)}
+.work-note.deploy{border-left:3px solid #2e7d32;background:#f1f8f1}
+.work-note.deploy .nm-w{color:#2e7d32}
+.work-note.watch-trig{border-left:3px solid var(--syf-yellow);background:rgba(255,206,50,.05);animation:flashIn 1s ease both}
+.work-note.watch-trig .nm-w{color:#974f0c}
+.work-note code{background:#f4f5f7;padding:1px 4px;border-radius:2px;font-family:var(--font-mono);font-size:10.5px}
+
+/* === DASHBOARD (Scene 4) === */
+.scene4 .scene-body{grid-template-columns:1fr}
+.dash{background:var(--syf-black);border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column;height:100%;overflow:hidden}
+.dash-h{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.dash-h .left{display:flex;align-items:center;gap:10px}
+.dash-h .nm-d{font-weight:700;font-size:15px}
+.dash-h .stat-pill{font-family:var(--font-mono);font-size:10px;color:var(--success);background:rgba(127,217,155,.1);padding:3px 9px;border-radius:5px;border:1px solid rgba(127,217,155,.3);letter-spacing:.06em;text-transform:uppercase;display:inline-flex;align-items:center;gap:5px}
+.dash-h .stat-pill::before{content:"●";color:var(--success);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.dash-h .right{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);letter-spacing:.06em}
+.dash-cols-wrap{flex:1;padding:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;min-height:0}
+@media(max-width:900px){.dash-cols-wrap{grid-template-columns:1fr}}
+.dash-col{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;flex-direction:column;overflow:hidden}
+.dash-col .colhead{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;flex-shrink:0}
+.dash-col.green .colhead{color:var(--success)}
+.dash-col.amber .colhead{color:var(--warning)}
+.dash-col.red .colhead{color:var(--danger)}
+.col-cards{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+.chg-card{padding:9px 11px;border-radius:5px;background:var(--panel2);border-left:3px solid;cursor:pointer;transition:.15s}
+.chg-card:hover{transform:translateX(2px)}
+.dash-col.green .chg-card{border-color:var(--success)}
+.dash-col.amber .chg-card{border-color:var(--warning)}
+.dash-col.red .chg-card{border-color:var(--danger)}
+.chg-card.target{outline:1px solid var(--syf-yellow);outline-offset:2px}
+.chg-card .chg-id-d{font-family:var(--font-mono);font-weight:600;color:var(--ink);font-size:11.5px;display:flex;justify-content:space-between;align-items:center}
+.chg-card .chg-app-d{font-family:var(--font-mono);color:var(--dim);font-size:10px;margin-top:3px}
+.chg-card .chg-state-d{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;margin-top:4px;color:var(--dim);display:flex;align-items:center;gap:5px}
+.chg-card .chg-state-d .ago{margin-left:auto;color:var(--faint)}
+.dash-col.green .chg-state-d{color:var(--success)}
+.dash-col.amber .chg-state-d{color:var(--warning)}
+.dash-col.red .chg-state-d{color:var(--danger)}
+.chg-card .progress-tiny{margin-top:6px;height:3px;background:var(--syf-black);border-radius:2px;overflow:hidden}
+.chg-card .progress-tiny .fill{height:100%;background:var(--success);width:48%}
+.dash-col.amber .progress-tiny .fill{background:var(--warning);width:18%}
+.dash-col.red .progress-tiny .fill{background:var(--danger);width:88%}
+
+/* === LOG TERMINAL (Scenes 5/6) === */
+.terminal{background:var(--syf-black);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;font-family:var(--font-mono);height:100%}
+.terminal.amber{border-color:rgba(255,180,84,.3)}
+.terminal.red{border-color:rgba(255,107,107,.4)}
+.term-head{padding:9px 14px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--syf-yellow-soft);color:var(--syf-yellow)}
+.terminal.amber .term-head{background:rgba(255,180,84,.06);color:var(--warning)}
+.terminal.red .term-head{background:rgba(255,107,107,.06);color:var(--danger)}
+.term-head .dots{display:flex;gap:5px}
+.term-head .dots span{width:8px;height:8px;border-radius:50%;background:var(--border-bright)}
+.term-body{flex:1;overflow-y:auto;padding:12px 16px;font-size:11.5px;line-height:1.65;color:var(--dim);min-height:0}
+.log-line{padding:2px 0;display:flex;gap:9px;animation:logIn .4s ease both;opacity:0}
+.log-line.show{opacity:1}
+.log-line .ts{color:var(--faint);font-size:10px;flex-shrink:0;width:80px}
+.log-line .lvl{flex-shrink:0;width:50px;font-size:9.5px;font-weight:600;letter-spacing:.04em;padding-top:1px}
+.log-line .lvl.INFO{color:#5b8fc7}
+.log-line .lvl.DEBUG{color:var(--faint)}
+.log-line .lvl.WARN{color:var(--warning)}
+.log-line .lvl.ERROR{color:var(--danger)}
+.log-line .lvl.PASS{color:var(--success)}
+.log-line .lvl.AGENT{color:var(--syf-yellow)}
+.log-line .lvl.RCA{color:var(--syf-yellow)}
+.log-line .msg-txt{flex:1;color:var(--dim);word-wrap:break-word}
+.log-line .msg-txt b{color:var(--ink);font-weight:500}
+.log-line .msg-txt code{color:var(--syf-yellow);background:rgba(255,206,50,.07);padding:0 4px;border-radius:3px;font-size:10.5px}
+.log-line.fail .msg-txt b{color:var(--danger)}
+.log-line.success .msg-txt b{color:var(--success)}
+.log-line.thinking{font-style:italic;color:var(--faint);padding-left:90px}
+@keyframes logIn{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+
+/* Split scene L2 + DASHBOARD */
+.scene5 .scene-body, .scene6 .scene-body{grid-template-columns:1.2fr 1fr}
+@media(max-width:1100px){.scene5 .scene-body, .scene6 .scene-body{grid-template-columns:1fr}}
+.mini-dash{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto}
+.mini-dash .mdh{font-family:var(--font-mono);font-size:10px;color:var(--syf-yellow);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.metric-row{padding:9px 12px;background:var(--panel2);border-radius:6px;border:1px solid var(--border);font-size:12px}
+.metric-row .nm-m{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.metric-row .nm-m .label{font-weight:500;color:var(--ink)}
+.metric-row .nm-m .val{font-family:var(--font-mono);font-size:13.5px;font-weight:600}
+.metric-row .ctx{font-size:10.5px;color:var(--dim);font-family:var(--font-mono);letter-spacing:.02em}
+.metric-row.ok .nm-m .val{color:var(--success)}
+.metric-row.warn .nm-m .val{color:var(--warning)}
+.metric-row.bad .nm-m .val{color:var(--danger)}
+.metric-row.bad{border-color:rgba(255,107,107,.3);background:rgba(255,107,107,.05)}
+.metric-row.warn{border-color:rgba(255,180,84,.3);background:rgba(255,180,84,.04)}
+
+/* === TEAMS CARD (Scene 7) === */
+.scene7 .scene-body{grid-template-columns:1fr 1fr}
+@media(max-width:1000px){.scene7 .scene-body{grid-template-columns:1fr}}
+.teams-window{background:#1e1e2e;border:1px solid #3a3a47;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;height:100%}
+.teams-h{background:#2a2a3a;padding:9px 14px;border-bottom:1px solid #3a3a47;display:flex;align-items:center;gap:10px;flex-shrink:0;color:#f0f0f0}
+.teams-h .logo{background:#6264a7;color:#fff;font-weight:800;padding:3px 8px;border-radius:3px;font-size:11px;font-family:var(--font-sans)}
+.teams-h .channel{font-size:12px;color:#dadce0}
+.teams-h .channel b{color:#fff;font-weight:600}
+.teams-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.teams-msg{display:flex;gap:10px;animation:fadeUp .4s ease both;opacity:0}
+.teams-msg.show{opacity:1}
+.teams-msg .av-t{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--syf-yellow),var(--syf-yellow-deep));display:flex;align-items:center;justify-content:center;color:var(--syf-black);font-weight:800;font-size:11px;flex-shrink:0;font-family:var(--font-sans)}
+.teams-msg .av-t.h{background:linear-gradient(135deg,#6264a7,#4b4d8f);color:#fff}
+.teams-msg .body-t{flex:1;font-size:13px}
+.teams-msg .body-t .from{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.teams-msg .body-t .nm-t{font-weight:600;color:#f0f0f0;font-size:12.5px}
+.teams-msg .body-t .ts-t{font-size:10.5px;color:#888;font-family:var(--font-mono)}
+.adaptive{background:#2d2d3a;border-radius:6px;padding:14px;border:1px solid #3a3a47;color:#f0f0f0}
+.adaptive .alert-bar{font-size:10.5px;color:var(--danger);font-family:var(--font-mono);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #3a3a47;display:flex;justify-content:space-between}
+.adaptive .alert-bar .conf{color:var(--syf-yellow)}
+.adaptive .card-title{font-size:14.5px;font-weight:600;color:#f0f0f0;margin-bottom:8px;line-height:1.3}
+.adaptive .meta-grid{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:11.5px;color:#bbb;margin-bottom:10px}
+.adaptive .meta-grid .k{font-family:var(--font-mono);color:#888;font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;padding-top:2px}
+.adaptive .meta-grid .v{color:#f0f0f0;font-size:11.5px;line-height:1.5}
+.adaptive .meta-grid .v code{background:#1d1d27;padding:1px 5px;border-radius:3px;color:var(--syf-yellow);font-family:var(--font-mono);font-size:10.5px}
+.adaptive .meta-grid .v a{color:var(--syf-yellow);text-decoration:none;font-family:var(--font-mono)}
+.adaptive .acts-t{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;padding-top:10px;border-top:1px solid #3a3a47}
+.teams-btn{font-size:11px;padding:6px 11px;border-radius:3px;border:1px solid #555;background:transparent;color:#f0f0f0;cursor:pointer;font-family:var(--font-sans);transition:.15s}
+.teams-btn:hover{background:#3a3a47}
+.teams-btn.primary{background:var(--syf-yellow);color:var(--syf-black);border-color:var(--syf-yellow);font-weight:600}
+.teams-btn.primary:hover{background:var(--syf-yellow-deep)}
+
+/* Side panel with RCA */
+.rca-side{background:var(--panel);border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
+.rca-side-h{padding:10px 14px;background:var(--syf-yellow-soft);border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:10.5px;color:var(--syf-yellow);letter-spacing:.1em;text-transform:uppercase;display:flex;justify-content:space-between;flex-shrink:0}
+.rca-side-h .id-r{color:var(--ink)}
+.rca-side-body{padding:14px;overflow-y:auto;flex:1;font-size:12px}
+.rca-step{margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed var(--border)}
+.rca-step:last-child{border-bottom:0;margin-bottom:0}
+.rca-step .h-s{font-family:var(--font-mono);font-size:10px;color:var(--syf-yellow);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+.rca-step .b-s{color:var(--dim);line-height:1.55}
+.rca-step .b-s b{color:var(--ink)}
+.rca-step .b-s code{font-family:var(--font-mono);background:var(--syf-black);padding:1px 5px;border-radius:3px;color:var(--syf-yellow);font-size:11px}
+.confidence-bar{margin-top:10px;padding:10px 12px;background:var(--syf-yellow-soft);border:1px solid rgba(255,206,50,.4);border-radius:6px;display:flex;align-items:center;justify-content:space-between;font-family:var(--font-mono);font-size:10.5px}
+.confidence-bar .pct{font-size:24px;font-weight:800;color:var(--syf-yellow);font-family:var(--font-sans);letter-spacing:-.02em}
+
+/* foot */
+.foot-hint{position:fixed;bottom:6px;right:12px;font-family:var(--font-mono);font-size:9.5px;color:var(--faint);letter-spacing:.08em;pointer-events:none}
+
+@media(max-width:900px){.scene-nav{display:none}}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="brand">
+      <span class="dot"></span>
+      <span class="nm">ReleasePilot + ReleaseWatch</span>
+      <span class="sub">on the Synchrony Agentic AI Platform</span>
+      <span class="platform-badge">AgentCore Runtime · Claude via LLM Gateway</span>
+    </div>
+    <div class="scene-nav">
+      <button class="sn-btn active" data-scene="0"><span class="n">00</span>Overview</button>
+      <button class="sn-btn phase-pilot" data-scene="1"><span class="n">01</span>Jira Trigger</button>
+      <button class="sn-btn phase-pilot" data-scene="2"><span class="n">02</span>Confluence + Risk</button>
+      <button class="sn-btn phase-pilot" data-scene="3"><span class="n">03</span>SNOW Handoff</button>
+      <button class="sn-btn" data-scene="4"><span class="n">04</span>Dashboard</button>
+      <button class="sn-btn" data-scene="5"><span class="n">05</span>L2 Drift</button>
+      <button class="sn-btn" data-scene="6"><span class="n">06</span>L3 RCA</button>
+      <button class="sn-btn" data-scene="7"><span class="n">07</span>Teams Handoff</button>
+    </div>
+    <div class="controls">
+      <button class="ctrl" id="replay">↻ Replay</button>
+      <button class="ctrl primary" id="next">Next →</button>
+    </div>
+  </div>
+
+  <div class="stage">
+
+    <!-- SCENE 0: OVERVIEW -->
+    <div class="scene scene0 active" data-scene="0">
+      <div class="overview">
+        <div class="ov-hero">
+          <h2>From the moment a release is ready, to the moment we're <span class="y">confident it worked.</span></h2>
+          <p>Eight scenes. Two agents handing off across the full release lifecycle. Use the nav above, arrow keys, or click any card below to jump.</p>
+        </div>
+        <div class="phase-marker pilot"><span class="line"></span>Phase 1 · ReleasePilot · Pre-Deploy<span class="line"></span></div>
+        <div class="scene-list">
+          <div class="scene-card pilot" data-jump="1">
+            <div class="ns">▸ SCENE 01</div>
+            <div class="nt">The trigger in Jira</div>
+            <div class="nd">A release lead comments <code style="color:var(--pilot)">@release-pilot go</code>. The agent wakes.</div>
+          </div>
+          <div class="scene-card pilot" data-jump="2">
+            <div class="ns">▸ SCENE 02</div>
+            <div class="nt">Confluence release page + risk packet</div>
+            <div class="nd">The agent writes the release docs and the risk packet for the post-deploy agent to read later.</div>
+          </div>
+          <div class="scene-card pilot" data-jump="3">
+            <div class="ns">▸ SCENE 03</div>
+            <div class="nt">CHG advances · deploy completes</div>
+            <div class="nd">ServiceNow CHG progresses through approvals. Deploy comment fires the handoff to ReleaseWatch.</div>
+          </div>
+        </div>
+        <div class="phase-marker watch"><span class="line"></span>Phase 2 · ReleaseWatch · Post-Deploy<span class="line"></span></div>
+        <div class="scene-list">
+          <div class="scene-card" data-jump="4">
+            <div class="ns">▸ SCENE 04</div>
+            <div class="nt">The watch dashboard</div>
+            <div class="nd">Every CHG ReleaseWatch is shepherding. Green / amber / red. The agent's HUD.</div>
+          </div>
+          <div class="scene-card" data-jump="5">
+            <div class="ns">▸ SCENE 05</div>
+            <div class="nt">Drift detected — L2</div>
+            <div class="nd">Producer healthy, consumer starved. The agent reasons about the relationship — not just thresholds.</div>
+          </div>
+          <div class="scene-card" data-jump="6">
+            <div class="ns">▸ SCENE 06</div>
+            <div class="nt">RCA generated — L3</div>
+            <div class="nd">Past INCs, live RabbitMQ metrics, bitbucket diff. One coherent diagnosis with confidence score.</div>
+          </div>
+          <div class="scene-card" data-jump="7">
+            <div class="ns">▸ SCENE 07</div>
+            <div class="nt">Handoff to human · Teams</div>
+            <div class="nd">Adaptive Card with the full context. Acknowledge, downgrade, or open the INC. Human takes over.</div>
+          </div>
+        </div>
+        <div class="start-line">
+          <span>Press</span>
+          <button onclick="goScene(1)">Start the demo →</button>
+          <span>or use arrow keys</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 1: JIRA TRIGGER -->
+    <div class="scene scene1" data-scene="1">
+      <div class="scene-header">
+        <div class="scene-tag pilot">▸ Scene 01 · Phase 1 · ReleasePilot Wakes</div>
+        <div class="scene-title">A release is ready. A human says go.</div>
+        <div class="scene-sub">The release lead has closed all the release stories for Fix Version 2026.06.08. To kick off the agent, they just add a comment to one of them.</div>
+      </div>
+      <div class="scene-body" style="grid-template-columns:1fr">
+        <div class="jira" style="max-width:920px;margin:0 auto;width:100%">
+          <div class="jira-head">
+            <span class="logo">JIRA</span>
+            <span class="breadcrumb">Projects / Acquisition APIs / <b>ACQ-3847</b></span>
+          </div>
+          <div class="jira-body" id="jira1">
+            <div class="jira-story-head">
+              <span class="jira-tag story">Story</span>
+              <span class="jira-tag done">Done</span>
+              <span class="jira-tag">Fix Version: 2026.06.08</span>
+            </div>
+            <div class="jira-title">ACQ-3847 · Add per-consumer routing config for application-consumer fan-out</div>
+            <div class="jira-meta">
+              <span class="k">Assignee</span><span class="v">Vamshi Veggalam</span>
+              <span class="k">Reporter</span><span class="v">Sanjay Kumar</span>
+              <span class="k">Components</span><span class="v">application-consumer</span>
+              <span class="k">Fix Version</span><span class="v link">2026.06.08</span>
+              <span class="k">Sprint</span><span class="v">Iteration 26.06.A</span>
+            </div>
+            <div class="jira-section">
+              <div class="jira-section-h">Subtasks · 4 of 4 complete</div>
+              <div class="subtask"><span class="id">ACQ-3851</span><span class="nm">Add per-consumer routing config to publisher</span><span class="status done">Done</span></div>
+              <div class="subtask"><span class="id">ACQ-3852</span><span class="nm">DB migration · create messaging_config table (required before publisher init)</span><span class="status done">Done</span></div>
+              <div class="subtask"><span class="id">ACQ-3853</span><span class="nm">Integration tests for routing config in QA</span><span class="status done">Done</span></div>
+              <div class="subtask"><span class="id">ACQ-3854</span><span class="nm">Update release notes for routing config change</span><span class="status done">Done</span></div>
+            </div>
+            <div class="jira-comments" id="jira1-comments">
+              <div class="jira-section-h">Comments</div>
+              <div class="comment">
+                <div class="who"><span class="av">SK</span><span class="nm-c">Sanjay Kumar</span><span class="ts">2 days ago</span></div>
+                Looks good. Ready for release on June 8. PR is approved and merged.
+              </div>
+              <div class="comment">
+                <div class="who"><span class="av">VV</span><span class="nm-c">Vamshi Veggalam</span><span class="ts">1 day ago</span></div>
+                Confirmed. All subtasks closed. Moving to release queue.
+              </div>
+            </div>
+            <div class="jira-comments-input" id="jira1-input">
+              <textarea placeholder="Add a comment..." id="jira1-textarea">@release-pilot go</textarea>
+              <div class="actions">
+                <button class="jira-btn">Cancel</button>
+                <button class="jira-btn primary" id="jira1-submit">Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 2: CONFLUENCE -->
+    <div class="scene scene2" data-scene="2">
+      <div class="scene-header">
+        <div class="scene-tag pilot">▸ Scene 02 · Phase 1 · The Risk Packet</div>
+        <div class="scene-title">ReleasePilot writes the release page — and the risk packet.</div>
+        <div class="scene-sub">Within 90 seconds of the Jira comment, the Confluence page exists. It contains everything humans need to review the release, plus a structured risk section ReleaseWatch will read after deploy.</div>
+      </div>
+      <div class="scene-body" style="grid-template-columns:1fr">
+        <div class="conf" style="max-width:920px;margin:0 auto;width:100%">
+          <div class="conf-head">
+            <span class="logo">CONFL</span>
+            <span class="breadcrumb">Spaces / Acquisition / Releases / <b>2026.06.08 Release</b></span>
+          </div>
+          <div class="conf-body">
+            <div class="conf-page-h">
+              <h1 class="conf-title">Release 2026.06.08 · application-consumer · Standard Release Page v3</h1>
+            </div>
+            <div class="conf-author">
+              <span class="av">RP</span>
+              <span>Filled from <b>Synchrony Standard Release Page v3</b> by <b style="color:var(--pilot)">ReleasePilot</b> · 23:14 UTC, 7 June 2026</span>
+            </div>
+
+            <h2>Scope &amp; Intent</h2>
+            <p>This release adds per-consumer routing config to <code>application-consumer</code>'s RabbitMQ publisher, so routing keys can be managed without redeploy. It introduces a new <code>messaging_config</code> table and <b>requires DB migration ACQ-3852 to run before the publisher initializes.</b> application-consumer fans out to <code>sms-consumer</code>, <code>email-consumer</code>, and <code>audit-consumer</code>.</p>
+            <div class="info-box risk">
+              <div class="lbl">▸ Risk Score</div>
+              <b style="color:var(--warning);font-size:15px">72 / 100 · Elevated</b> — touches the messaging publish path AND requires a DB migration. Past incidents on this app cluster around messaging-init and migration-ordering failures. Migration-dependent releases are the highest-risk class for this service.
+            </div>
+
+            <div class="info-box">
+              <div class="lbl">▸ Deployment Plan</div>
+              1 application · CHG0049182 · story ACQ-3847 · 4 subtasks (incl. migration ACQ-3852) · build 20260608.1.42 · deploy window 01:30 AM CDE2 on June 8
+            </div>
+
+            <h2>Changes Included</h2>
+            <table class="conf-table">
+              <thead><tr><th>Story</th><th>Title</th><th>Author</th></tr></thead>
+              <tbody>
+                <tr><td><code>ACQ-3847</code></td><td>Add per-consumer routing config for application-consumer fan-out</td><td>Vamshi Veggalam</td></tr>
+              </tbody>
+            </table>
+
+            <h2>Deployment Plan</h2>
+            <ul>
+              <li><b>CDE2:</b> June 8, 01:30 AM ET — build 20260608.1.42 · <b>migration ACQ-3852 must run first</b></li>
+              <li><b>CDE3:</b> June 9, 01:30 AM ET (if CDE2 watch is clean for 24 hours)</li>
+              <li><b>Rollback:</b> revert to build 20260601.1.18 via UDeploy (~5 min)</li>
+            </ul>
+
+            <h2>▸ Risk Packet (read by ReleaseWatch)</h2>
+            <div class="info-box risk">
+              <div class="lbl">▸ Past INCs · application-consumer (last 180 days)</div>
+              <b>INC0221904</b> · 2026-03-18 · Forgotten DB migration → publisher init failure → downstream starved · <b style="color:var(--danger)">HIGH similarity</b><br>
+              <b>INC0218763</b> · 2026-04-12 · sms-consumer backlog after upstream routing change · MEDIUM<br>
+              <b>INC0214098</b> · 2026-02-22 · Thread pool exhaustion under fan-out load · LOW
+            </div>
+            <div class="info-box warning">
+              <div class="lbl">▸ Failure modes to watch</div>
+              <code>missing_migration</code> · <code>silent_publisher_init_failure</code> · <code>downstream_starvation</code> · <code>thread_pool_exhaustion</code>
+            </div>
+            <div class="info-box">
+              <div class="lbl">▸ Downstream apps to watch</div>
+              <code>sms-consumer</code> (primary) · <code>email-consumer</code> · <code>audit-consumer</code> (secondary) · resolved from service catalog
+            </div>
+            <div class="info-box warning">
+              <div class="lbl">▸ Expected metric shifts (from release intent)</div>
+              Routing config changes keys, not volume — <b>publish rate and all downstream inbound rates should hold at baseline.</b> No change to the HTTP layer. A drop to zero on publish or any downstream is the documented <code>silent_publisher_init_failure</code> mode and must be investigated immediately.
+            </div>
+
+            <h2>Approvals</h2>
+            <table class="conf-table">
+              <thead><tr><th>Role</th><th>Approver</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Tech Lead</td><td>Vamshi Veggalam</td><td><span class="badge low">Approved</span></td></tr>
+                <tr><td>Manager</td><td>Priya Reddy</td><td><span class="badge low">Approved</span></td></tr>
+                <tr><td>CAB</td><td>Auto via low-risk classification</td><td><span class="badge low">Approved</span></td></tr>
+              </tbody>
+            </table>
+
+            <div class="agent-stamp">
+              <span class="pill">ReleasePilot</span>
+              <span>Generated in 87 seconds · sources: 1 Jira story · 4 subtasks · 3 past INCs from ServiceNow · service catalog dependency graph</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 3: SNOW CHG -->
+    <div class="scene scene3" data-scene="3">
+      <div class="scene-header">
+        <div class="scene-tag pilot">▸ Scene 03 · Phase 1 · CHG Progresses · Deploy Completes</div>
+        <div class="scene-title">The change ticket advances. The deploy comment triggers ReleaseWatch.</div>
+        <div class="scene-sub">Watch the work notes accumulate. ReleasePilot has been progressing the CHG through approvals. At 01:32 AM, the deploy comment arrives — and that's the handoff to Phase 2.</div>
+      </div>
+      <div class="scene-body" style="grid-template-columns:1fr">
+        <div class="snow" style="max-width:920px;margin:0 auto;width:100%">
+          <div class="snow-head">
+            <span class="logo">ITSM</span>
+            <span class="crumb">Change / <b>CHG0049182</b></span>
+          </div>
+          <div class="snow-body">
+            <div class="snow-page-h">
+              <span class="chg-id">CHG0049182</span>
+              <span class="title">Acquisition decision orchestrator · durable messaging enablement</span>
+              <span class="state implement">Implement</span>
+            </div>
+            <div class="snow-fields">
+              <div class="snow-fld"><div class="lbl">Application</div><div class="val mono">application-consumer</div></div>
+              <div class="snow-fld"><div class="lbl">Foundation</div><div class="val mono">CDE2 → CDE3</div></div>
+              <div class="snow-fld"><div class="lbl">Risk classification</div><div class="val">Low (auto)</div></div>
+              <div class="snow-fld"><div class="lbl">Linked story</div><div class="val mono">ACQ-3847</div></div>
+              <div class="snow-fld"><div class="lbl">Release page</div><div class="val mono" style="color:var(--conf-blue)">/wiki/.../release-2026.06.08</div></div>
+              <div class="snow-fld"><div class="lbl">Deploy window</div><div class="val">June 8 · 01:00–01:30 AM ET</div></div>
+            </div>
+            <div class="snow-section">
+              <div class="snow-section-h">Work Notes · Activity</div>
+              <div id="snow-notes">
+                <div class="work-note agent">
+                  <div class="who-w"><span class="av-w">RP</span><span class="nm-w">ReleasePilot</span><span class="ts-w">2026-06-07 23:16:04</span></div>
+                  CHG created from Jira ACQ-3847. Release page authored: <code>/wiki/.../release-2026.06.08</code>. Risk packet attached. State → Assess.
+                </div>
+                <div class="work-note">
+                  <div class="who-w"><span class="av-w" style="background:linear-gradient(135deg,#5b8fc7,#3070b8);color:#fff">PR</span><span class="nm-w" style="color:#293e40">Priya Reddy</span><span class="ts-w">2026-06-07 23:42:11</span></div>
+                  Reviewed release notes and risk packet. Approved.
+                </div>
+                <div class="work-note agent">
+                  <div class="who-w"><span class="av-w">RP</span><span class="nm-w">ReleasePilot</span><span class="ts-w">2026-06-07 23:42:18</span></div>
+                  Approver confirmation received via Teams Adaptive Card. CAB auto-approved (low-risk). State → Implement.
+                </div>
+                <div class="work-note deploy">
+                  <div class="who-w"><span class="av-w" style="background:#2e7d32;color:#fff">UD</span><span class="nm-w" style="color:#2e7d32">UDeploy Pipeline</span><span class="ts-w">2026-06-08 01:00:24</span></div>
+                  Deploy started · CDE2 · build <code>20260608.1.42</code>
+                </div>
+                <div class="work-note deploy">
+                  <div class="who-w"><span class="av-w" style="background:#2e7d32;color:#fff">UD</span><span class="nm-w" style="color:#2e7d32">UDeploy Pipeline</span><span class="ts-w">2026-06-08 01:28:51</span></div>
+                  Deploy completed · CDE2 · health checks green · all instances reporting healthy
+                </div>
+                <!-- The handoff trigger comment, injected on play -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 4: DASHBOARD -->
+    <div class="scene scene4" data-scene="4">
+      <div class="scene-header">
+        <div class="scene-tag">▸ Scene 04 · Phase 2 · The Watch Dashboard</div>
+        <div class="scene-title">ReleaseWatch's HUD — every CHG it's currently watching.</div>
+        <div class="scene-sub">Not a generic ops dashboard. Only CHGs the agent is actively shepherding. Color-coded by the agent's own escalation state. Click into our target CHG (highlighted yellow) to follow its journey.</div>
+      </div>
+      <div class="scene-body">
+        <div class="dash">
+          <div class="dash-h">
+            <div class="left">
+              <div class="nm-d">ReleaseWatch · Active CHGs</div>
+              <span class="stat-pill">9 watching</span>
+            </div>
+            <div class="right">Auto-refresh 30s · last update 23s ago · 2026-06-08 04:12 AM ET</div>
+          </div>
+          <div class="dash-cols-wrap">
+            <div class="dash-col green">
+              <div class="colhead"><span>▸ Green · 7</span><span>All Clear</span></div>
+              <div class="col-cards">
+                <div class="chg-card"><div class="chg-id-d">CHG0049180 <span style="color:var(--success);font-size:9.5px">●</span> <span style="color:var(--success);font-size:8.5px;font-family:var(--font-mono)">risk 28</span></div><div class="chg-app-d">credit-apply</div><div class="chg-state-d">L1 · all clear<span class="ago">4h 22m</span></div><div class="progress-tiny"><div class="fill"></div></div></div>
+                <div class="chg-card"><div class="chg-id-d">CHG0049181 <span style="color:var(--success);font-size:9.5px">●</span></div><div class="chg-app-d">notification-dispatcher</div><div class="chg-state-d">L1 · all clear<span class="ago">6h 08m</span></div><div class="progress-tiny"><div class="fill"></div></div></div>
+                <div class="chg-card"><div class="chg-id-d">CHG0049184 <span style="color:var(--success);font-size:9.5px">●</span></div><div class="chg-app-d">rewards-calc-engine</div><div class="chg-state-d">L1 · all clear<span class="ago">2h 44m</span></div><div class="progress-tiny"><div class="fill"></div></div></div>
+                <div class="chg-card"><div class="chg-id-d">CHG0049185 <span style="color:var(--success);font-size:9.5px">●</span></div><div class="chg-app-d">offer-eligibility-api</div><div class="chg-state-d">L1 · all clear<span class="ago">3h 11m</span></div><div class="progress-tiny"><div class="fill"></div></div></div>
+                <div class="chg-card"><div class="chg-id-d">CHG0049186 <span style="color:var(--success);font-size:9.5px">●</span></div><div class="chg-app-d">audit-consumer</div><div class="chg-state-d">L1 · all clear<span class="ago">5h 02m</span></div><div class="progress-tiny"><div class="fill"></div></div></div>
+                <div class="chg-card"><div class="chg-id-d">CHG0049187 <span style="color:var(--success);font-size:9.5px">●</span></div><div class="chg-app-d">partner-callback-svc</div><div class="chg-state-d">L1 · all clear<span class="ago">1h 38m</span></div><div class="progress-tiny"><div class="fill"></div></div></div>
+                <div class="chg-card"><div class="chg-id-d">CHG0049188 <span style="color:var(--success);font-size:9.5px">●</span></div><div class="chg-app-d">credit-app-router</div><div class="chg-state-d">L1 · all clear<span class="ago">0h 54m</span></div><div class="progress-tiny"><div class="fill"></div></div></div>
+              </div>
+            </div>
+            <div class="dash-col amber">
+              <div class="colhead"><span>▸ Amber · 1</span><span>Drift</span></div>
+              <div class="col-cards">
+                <div class="chg-card"><div class="chg-id-d">CHG0049183 <span style="color:var(--warning);font-size:9.5px">●</span></div><div class="chg-app-d">payment-gateway-router</div><div class="chg-state-d">L2 · response time +28%<span class="ago">12m</span></div><div class="progress-tiny"><div class="fill"></div></div></div>
+              </div>
+            </div>
+            <div class="dash-col red">
+              <div class="colhead"><span>▸ Red · 1</span><span>INC Open</span></div>
+              <div class="col-cards">
+                <div class="chg-card target" onclick="goScene(5)"><div class="chg-id-d">CHG0049182 <span style="color:var(--danger);font-size:9.5px">●</span> <span style="color:var(--warning);font-size:8.5px;font-family:var(--font-mono)">risk 72</span></div><div class="chg-app-d">application-consumer</div><div class="chg-state-d">L2 → L3 · RCA in progress<span class="ago">3m</span></div><div class="progress-tiny"><div class="fill"></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 5: L2 DRIFT -->
+    <div class="scene scene5" data-scene="5">
+      <div class="scene-header">
+        <div class="scene-tag">▸ Scene 05 · L2 Drift · The Relationship is Off</div>
+        <div class="scene-title">Producer healthy. Consumer starved. Neither alert is fired alone — but together they're a pattern.</div>
+        <div class="scene-sub">Live reasoning trace alongside the metrics ReleaseWatch is actually seeing. The agent goes from "drift detected" to "amber escalation" in 8 minutes.</div>
+      </div>
+      <div class="scene-body">
+        <div class="terminal amber">
+          <div class="term-head">
+            <div class="dots"><span></span><span></span><span></span></div>
+            <span>▸ ReleaseWatch · L2 reasoning · CHG0049182</span>
+          </div>
+          <div class="term-body" id="l2Log"></div>
+        </div>
+        <div class="mini-dash">
+          <div class="mdh">▸ Metrics being compared</div>
+          <div class="metric-row ok">
+            <div class="nm-m"><span class="label">application-consumer · HTTP 2xx</span><span class="val">408/min</span></div>
+            <div class="ctx">healthy · 0 5xx · CPU 19% · health checks green</div>
+          </div>
+          <div class="metric-row ok">
+            <div class="nm-m"><span class="label">application-consumer · error logs</span><span class="val">CLEAN</span></div>
+            <div class="ctx">0 ERROR entries in last 30 min — publisher init logs at DEBUG only</div>
+          </div>
+          <div class="metric-row bad">
+            <div class="nm-m"><span class="label">application-consumer · publish rate</span><span class="val">22/min ↓91%</span></div>
+            <div class="ctx">baseline ~255/min · collapsing since deploy (01:32)</div>
+          </div>
+          <div class="metric-row bad">
+            <div class="nm-m"><span class="label">sms-consumer · inbound rate</span><span class="val">9/min ↓89%</span></div>
+            <div class="ctx">baseline ~85/min · email-consumer + audit-consumer also dropping</div>
+          </div>
+          <div class="metric-row warn">
+            <div class="nm-m"><span class="label">Risk packet · expected drift</span><span class="val">none</span></div>
+            <div class="ctx">publish + downstream should hold at baseline · a drop to 0 is the silent-publisher-init failure mode</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 6: L3 RCA -->
+    <div class="scene scene6" data-scene="6">
+      <div class="scene-header">
+        <div class="scene-tag">▸ Scene 06 · L3 · The RCA</div>
+        <div class="scene-title">From "something is wrong" to "here is the cause."</div>
+        <div class="scene-sub">The publish path has gone fully dead — all three downstream consumers at zero. The agent escalates to L3 — searches past INCs, checks the migration state, reads the bitbucket diff, and writes a coherent diagnosis.</div>
+      </div>
+      <div class="scene-body">
+        <div class="terminal red">
+          <div class="term-head">
+            <div class="dots"><span style="background:var(--danger)"></span><span></span><span></span></div>
+            <span>▸ ReleaseWatch · L3 RCA generation · CHG0049182</span>
+            <span style="margin-left:auto;font-family:var(--font-mono);font-size:9px;color:var(--syf-yellow);background:var(--syf-yellow-soft);border:1px solid rgba(255,206,50,.3);border-radius:4px;padding:2px 7px">LLM Gateway → Claude</span>
+          </div>
+          <div class="term-body" id="l3Log"></div>
+        </div>
+        <div class="rca-side">
+          <div class="rca-side-h">
+            <span>▸ Consolidated RCA</span>
+            <span class="id-r">INC0228994 · draft</span>
+          </div>
+          <div class="rca-side-body" id="rcaPanel">
+            <!-- populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 7: TEAMS HANDOFF -->
+    <div class="scene scene7" data-scene="7">
+      <div class="scene-header">
+        <div class="scene-tag">▸ Scene 07 · The Human Handoff</div>
+        <div class="scene-title">The agent's job ends where the human's begins.</div>
+        <div class="scene-sub">Adaptive Card lands in the team's Teams channel. INC already created. RCA already attached. The on-call engineer has options — and the agent defers to whatever they pick.</div>
+      </div>
+      <div class="scene-body">
+        <div class="teams-window">
+          <div class="teams-h">
+            <span class="logo">TEAMS</span>
+            <span class="channel"><b># release-watch-acquisition</b></span>
+          </div>
+          <div class="teams-body" id="teamsBody"></div>
+        </div>
+        <div class="rca-side">
+          <div class="rca-side-h">
+            <span>▸ Attached: INC0228994</span>
+            <span class="id-r">confidence 84%</span>
+          </div>
+          <div class="rca-side-body">
+            <div class="rca-step">
+              <div class="h-s">▸ Root cause</div>
+              <div class="b-s">Migration subtask <code>ACQ-3852</code> (create <code>messaging_config</code>) never ran on CDE2. The publisher (commit <code>a7f3c19</code>) couldn't initialize against the missing schema and silently stopped publishing — starving sms-, email-, and audit-consumer.</div>
+            </div>
+            <div class="rca-step">
+              <div class="h-s">▸ Evidence</div>
+              <div class="b-s">All 3 downstream consumers → <code>0/min</code> at exact deploy time (01:32) · app HTTP healthy, 0 errors (init logs DEBUG only) · migration <code>ACQ-3852</code> = NOT RUN on CDE2 (ran in QA) · matches past <code>INC0221904</code></div>
+            </div>
+            <div class="rca-step">
+              <div class="h-s">▸ Immediate fix options</div>
+              <div class="b-s">(a) Run the pending <code>messaging_config</code> migration on CDE2, then restart the publisher — ~10 min, no rollback · or (b) roll back to build <code>20260601.1.18</code> — ~5 min. <b>Option (a) preserves the release.</b></div>
+            </div>
+            <div class="rca-step">
+              <div class="h-s">▸ Long-term</div>
+              <div class="b-s">Add a publisher-health probe (not just HTTP health) to release readiness, and gate migration-dependent releases on a migration-applied check before deploy completes.</div>
+            </div>
+            <div class="confidence-bar">
+              <span>Diagnostic confidence</span>
+              <span class="pct">84%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="foot-hint">← → arrow keys · R to replay · 0-7 to jump · click cards to dive in</div>
+
+<script>
+let currentScene = 0;
+const totalScenes = 8;
+
+function goScene(n){
+  if(n<0||n>=totalScenes) return;
+  document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.sn-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.scene[data-scene="${n}"]`).classList.add('active');
+  document.querySelector(`.sn-btn[data-scene="${n}"]`).classList.add('active');
+  currentScene = n;
+  setTimeout(()=>playScene(n), 100);
+}
+
+function playScene(n){
+  if(n===1) playScene1();
+  if(n===2){} // static
+  if(n===3) playScene3();
+  if(n===5) playScene5();
+  if(n===6) playScene6();
+  if(n===7) playScene7();
+}
+
+/* SCENE 1: Jira comment trigger */
+function playScene1(){
+  // Reset
+  const input = document.getElementById('jira1-input');
+  const comments = document.getElementById('jira1-comments');
+  // remove any agent response from prior plays
+  comments.querySelectorAll('.comment.trigger, .agent-response').forEach(e=>e.remove());
+  // reset textarea
+  document.getElementById('jira1-textarea').value = '@release-pilot go';
+  // hook submit
+  const btn = document.getElementById('jira1-submit');
+  btn.onclick = ()=>{
+    const txt = document.getElementById('jira1-textarea').value;
+    if(!txt.trim()) return;
+    const c = document.createElement('div');
+    c.className = 'comment trigger';
+    c.innerHTML = `<div class="who"><span class="av">VV</span><span class="nm-c">Vamshi Veggalam</span><span class="ts">just now</span></div><span class="mention">@release-pilot</span> go`;
+    comments.appendChild(c);
+    document.getElementById('jira1-textarea').value = '';
+    // agent response
+    setTimeout(()=>{
+      if(!document.querySelector('.scene1.active')) return;
+      const r = document.createElement('div');
+      r.className = 'agent-response';
+      r.innerHTML = `<div class="nm-r">ReleasePilot</div>Acknowledged. Reading ACQ-3847 + 4 subtasks · pulling past INCs for application-consumer · resolving downstream consumers · loading the standard release template · risk score 72 (Elevated, migration dependency) · Confluence page and CHG ready in ~90 seconds.`;
+      comments.appendChild(r);
+      requestAnimationFrame(()=>r.classList.add('show'));
+      // auto advance after a beat
+      setTimeout(()=>{
+        if(document.querySelector('.scene1.active')) goScene(2);
+      }, 2400);
+    }, 600);
+  };
+}
+
+/* SCENE 3: SNOW handoff comment */
+function playScene3(){
+  const notes = document.getElementById('snow-notes');
+  // remove any prior watch-trig
+  notes.querySelectorAll('.work-note.watch-trig').forEach(e=>e.remove());
+  // after a delay, add the deploy-complete handoff comment + agent response
+  setTimeout(()=>{
+    if(!document.querySelector('.scene3.active')) return;
+    const dep = document.createElement('div');
+    dep.className = 'work-note watch-trig';
+    dep.innerHTML = `<div class="who-w"><span class="av-w" style="background:#2e7d32;color:#fff">UD</span><span class="nm-w" style="color:#2e7d32">UDeploy Pipeline</span><span class="ts-w">2026-06-08 01:32:14</span></div>Deployed to CDE2 successfully. All instances healthy. <code>build=20260608.1.42</code>`;
+    notes.appendChild(dep);
+    setTimeout(()=>{
+      if(!document.querySelector('.scene3.active')) return;
+      const rw = document.createElement('div');
+      rw.className = 'work-note agent';
+      rw.style.borderLeft = '3px solid var(--syf-yellow)';
+      rw.innerHTML = `<div class="who-w"><span class="av-w">RW</span><span class="nm-w" style="color:#974f0c">ReleaseWatch</span><span class="ts-w">2026-06-08 01:32:18</span></div>Picked up CHG0049182. Loaded risk packet from Confluence (risk 72). Watching <code>application-consumer</code> publish rate and downstream <code>sms-consumer</code> / <code>email-consumer</code> / <code>audit-consumer</code>. Post-deploy watch begins.`;
+      notes.appendChild(rw);
+      requestAnimationFrame(()=>rw.classList.add('show'));
+    }, 1200);
+  }, 1000);
+}
+
+/* SCENE 5: L2 log */
+const l2Lines = [
+  {ts:'01:36:02', lvl:'INFO', msg:'post-deploy check · CHG0049182 · application-consumer · 4m since deploy'},
+  {ts:'01:36:03', lvl:'INFO', msg:'pulling metrics · splunk · new relic · downstream consumers'},
+  {ts:'01:36:04', lvl:'DEBUG', msg:'application-consumer HTTP: <code>408 2xx/min</code> · <code>0 5xx</code> · CPU <code>19%</code> · <b>healthy</b>'},
+  {ts:'01:36:04', lvl:'DEBUG', msg:'application-consumer error logs: <code>0 ERROR</code> · clean (init logs at DEBUG only)'},
+  {ts:'01:36:05', lvl:'DEBUG', msg:'application-consumer publish rate: <code>22/min</code> · baseline <code>~255/min</code> · <b>down 91%</b>'},
+  {ts:'01:36:06', lvl:'DEBUG', msg:'sms-consumer inbound: <code>9/min</code> · baseline <code>~85/min</code> · <b>down 89%</b>'},
+  {ts:'01:36:06', lvl:'DEBUG', msg:'email-consumer + audit-consumer inbound also collapsing'},
+  {ts:'01:36:07', lvl:'WARN', msg:'cross-app pattern: <b>app healthy, all downstream starved</b>'},
+  {ts:'01:36:07', lvl:'AGENT', msg:'invoking reasoner: is this drift explained by release intent?'},
+  {ts:'01:36:08', lvl:'AGENT', msg:'reading Confluence release page CHG0049182 · expected_metric_shifts'},
+  {ts:'01:36:09', lvl:'AGENT', msg:'risk packet: publish + downstream rates should hold at baseline. drop to 0 <b>NOT</b> explained.'},
+  {ts:'01:36:10', lvl:'AGENT', msg:'risk packet listed <code>silent_publisher_init_failure</code> + <code>downstream_starvation</code> for this app. <b>matches.</b>'},
+  {ts:'01:36:11', lvl:'AGENT', msg:'searching active INCs on these apps · last 4 hours · none found'},
+  {ts:'01:36:12', lvl:'WARN', msg:'pattern unexplained · severity threshold crossed · <b>escalating to L2 (amber)</b>'},
+  {ts:'01:36:13', lvl:'INFO', msg:'CHG0049182 state → AMBER · email sent to dl-application-consumer-oncall@syf.com'},
+  {ts:'01:36:13', lvl:'INFO', msg:'beginning 15-min update cadence'},
+];
+function playScene5(){
+  renderLog('l2Log', l2Lines, 220, ()=>{
+    // chain to scene 6 after a beat
+    setTimeout(()=>{
+      if(document.querySelector('.scene5.active')) goScene(6);
+    }, 2200);
+  });
+}
+
+/* SCENE 6: L3 log + RCA panel */
+const l3Lines = [
+  {ts:'01:40:01', lvl:'WARN', msg:'publish rate now <code>0/min</code> · all 3 downstream consumers at <code>0/min</code>'},
+  {ts:'01:40:02', lvl:'AGENT', msg:'publish path fully dead · <b>escalating L2 → L3</b>'},
+  {ts:'01:40:03', lvl:'AGENT', msg:'beginning RCA generation · 4 evidence streams'},
+  {ts:'01:40:04', lvl:'RCA', msg:'<b>step 1/4:</b> correlate timing · downstream inbound vs deploy event'},
+  {ts:'01:40:05', lvl:'RCA', msg:'sms/email/audit-consumer all → <code>0/min</code> at <code>01:32:14</code> · <b>exact deploy completion time</b>'},
+  {ts:'01:40:06', lvl:'RCA', msg:'application-consumer HTTP healthy throughout · failure is in the publish path only'},
+  {ts:'01:40:07', lvl:'RCA', msg:'<b>step 2/4:</b> servicenow · searching past INCs by symptom similarity'},
+  {ts:'01:40:08', lvl:'RCA', msg:'match found: <code>INC0221904</code> · 2026-03-18 · "forgotten migration → publisher init failure → downstream starved"'},
+  {ts:'01:40:09', lvl:'RCA', msg:'pattern similarity: <b>HIGH</b> · same app, same failure mode'},
+  {ts:'01:40:10', lvl:'RCA', msg:'<b>step 3/4:</b> deploy + migration state · build <code>20260608.1.42</code>'},
+  {ts:'01:40:11', lvl:'RCA', msg:'migration subtask <code>ACQ-3852</code> (create messaging_config): <b>NOT RUN on CDE2</b>'},
+  {ts:'01:40:12', lvl:'RCA', msg:'note: ACQ-3852 ran in QA — which is why QA integration tests passed'},
+  {ts:'01:40:13', lvl:'RCA', msg:'bitbucket: commit <code>a7f3c19</code> · <code>RoutingConfigLoader.java</code> reads messaging_config on init'},
+  {ts:'01:40:14', lvl:'AGENT', msg:'reasoning: publisher init requires the table; table missing on CDE2 → init fails → publish stops'},
+  {ts:'01:40:15', lvl:'AGENT', msg:'init outcome logged at <code>DEBUG</code> only (commit b203fa5) → no ERROR surfaced · explains the silence'},
+  {ts:'01:40:16', lvl:'RCA', msg:'<b>step 4/4:</b> consolidating · drafting INC body · confidence calibration'},
+  {ts:'01:40:17', lvl:'RCA', msg:'evidence weight: exact deploy-time correlation + unrun migration + matching past INC'},
+  {ts:'01:40:18', lvl:'RCA', msg:'confidence: <code>0.84</code>'},
+  {ts:'01:40:19', lvl:'AGENT', msg:'creating INC <code>INC0228994</code> · linking to CHG0049182 · attaching evidence'},
+  {ts:'01:40:20', lvl:'AGENT', msg:'posting adaptive card to teams · <code>#release-watch-acquisition</code>'},
+  {ts:'01:40:21', lvl:'INFO', msg:'CHG0049182 state → RED · per-minute updates begin'},
+];
+const rcaSteps = [
+  {h:'▸ Step 1 · Timing correlation', when:5, body:`Correlated downstream inbound rates against the deploy event.<br><br>
+    sms-consumer, email-consumer, and audit-consumer all dropped to <code>0/min</code> at <code>01:32:14</code> — the <b>exact deploy completion time</b>.<br><br>
+    application-consumer's own HTTP layer stayed healthy throughout. The failure is in the publish path only.`},
+  {h:'▸ Step 2 · Past INC search', when:8, body:`Searched ServiceNow for similar symptom patterns on this app · last 180 days.<br><br>
+    <b>Match:</b> <code>INC0221904</code> (2026-03-18) — "forgotten DB migration → publisher init failure → downstream consumers starved. App healthy, downstream to zero, no ERROR logs."<br><br>
+    Pattern similarity: <b>HIGH</b> — same app, same failure mode.`},
+  {h:'▸ Step 3 · Deploy + migration state', when:11, body:`Checked the deploy and migration state for build <code>20260608.1.42</code>.<br><br>
+    Migration subtask <code>ACQ-3852</code> (create <code>messaging_config</code> table): <b>NOT RUN on CDE2</b>. It ran in QA — which is why QA passed.<br><br>
+    Commit <code>a7f3c19</code> (<code>RoutingConfigLoader.java</code>) reads that table on publisher init. Init outcome logs at <code>DEBUG</code> only (commit b203fa5), so nothing surfaced as an error.`},
+  {h:'▸ Step 4 · Consolidated RCA', when:16, body:`<b>Root cause:</b> Migration ACQ-3852 never ran on CDE2. The publisher couldn't initialize against the missing <code>messaging_config</code> table and silently stopped publishing, starving all three downstream consumers.<br><br>
+    <b>Immediate fix:</b> (a) Run the pending migration on CDE2 and restart the publisher (~10 min, no rollback), or (b) roll back to build 20260601.1.18 (~5 min). <b>(a) preserves the release.</b><br><br>
+    <b>Long-term:</b> Add a publisher-health probe to release readiness and gate migration-dependent releases on a migration-applied check.`,
+   conf:84},
+];
+function playScene6(){
+  // render logs
+  renderLog('l3Log', l3Lines, 200, ()=>{
+    setTimeout(()=>{
+      if(document.querySelector('.scene6.active')) goScene(7);
+    }, 2500);
+  });
+  // populate RCA panel progressively
+  const panel = document.getElementById('rcaPanel');
+  panel.innerHTML = '';
+  rcaSteps.forEach((s,i)=>{
+    setTimeout(()=>{
+      if(!document.querySelector('.scene6.active')) return;
+      const d = document.createElement('div');
+      d.className = 'rca-step';
+      d.innerHTML = `<div class="h-s">${s.h}</div><div class="b-s">${s.body}</div>${s.conf?`<div class="confidence-bar"><span>Diagnostic confidence</span><span class="pct">${s.conf}%</span></div>`:''}`;
+      panel.appendChild(d);
+    }, s.when*220);
+  });
+}
+
+/* SCENE 7: TEAMS adaptive card */
+function playScene7(){
+  const body = document.getElementById('teamsBody');
+  body.innerHTML = '';
+  // First message: the agent's card
+  setTimeout(()=>{
+    if(!document.querySelector('.scene7.active')) return;
+    const m1 = document.createElement('div');
+    m1.className = 'teams-msg';
+    m1.innerHTML = `
+      <div class="av-t">RW</div>
+      <div class="body-t">
+        <div class="from"><span class="nm-t">ReleaseWatch</span><span class="ts-t">02:38 AM</span></div>
+        <div class="adaptive">
+          <div class="alert-bar">
+            <span>▸ L3 · INC CREATED · ACTION REQUIRED</span>
+            <span class="conf">CONFIDENCE 84%</span>
+          </div>
+          <div class="card-title">Silent publish failure · downstream consumers starved · CHG0049182</div>
+          <div class="meta-grid">
+            <div class="k">App</div><div class="v"><code>application-consumer</code> · risk 72</div>
+            <div class="k">Deployed</div><div class="v">01:32 AM CDE2 · build <code>20260608.1.42</code></div>
+            <div class="k">Symptom</div><div class="v">app HTTP healthy · publish rate 0/min · sms/email/audit-consumer all 0/min since 01:32</div>
+            <div class="k">Root cause</div><div class="v">migration <code>ACQ-3852</code> (create messaging_config) <b>NOT RUN on CDE2</b> → publisher init failed silently</div>
+            <div class="k">Suspect change</div><div class="v"><code>RoutingConfigLoader.java</code> reads messaging_config on init (commit <code>a7f3c19</code>)</div>
+            <div class="k">Similar past INC</div><div class="v"><a>INC0221904</a> — identical pattern</div>
+            <div class="k">Fix</div><div class="v">run migration + restart publisher (~10m) · or roll back (~5m)</div>
+            <div class="k">This INC</div><div class="v"><a>INC0228994</a> — RCA attached, full evidence in description</div>
+          </div>
+          <div class="acts-t">
+            <button class="teams-btn primary">Acknowledge — I'm on it</button>
+            <button class="teams-btn">Downgrade to L2 (false positive)</button>
+            <button class="teams-btn">Open INC</button>
+          </div>
+        </div>
+      </div>`;
+    body.appendChild(m1);
+    requestAnimationFrame(()=>m1.classList.add('show'));
+  }, 200);
+  // Second message: human responding
+  setTimeout(()=>{
+    if(!document.querySelector('.scene7.active')) return;
+    const m2 = document.createElement('div');
+    m2.className = 'teams-msg';
+    m2.innerHTML = `
+      <div class="av-t h">AC</div>
+      <div class="body-t">
+        <div class="from"><span class="nm-t">Anisha C · On-call</span><span class="ts-t">01:41 AM</span></div>
+        <div style="background:#2d2d3a;border-radius:6px;padding:12px;border:1px solid #3a3a47;color:#f0f0f0;font-size:12.5px;line-height:1.55">
+          Confirmed — migration ACQ-3852 never ran on CDE2. Running it now and restarting the publisher. Keeping INC0228994 open for the post-mortem.
+        </div>
+      </div>`;
+    body.appendChild(m2);
+    requestAnimationFrame(()=>m2.classList.add('show'));
+  }, 2200);
+  // Third message: agent confirms downshift
+  setTimeout(()=>{
+    if(!document.querySelector('.scene7.active')) return;
+    const m3 = document.createElement('div');
+    m3.className = 'teams-msg';
+    m3.innerHTML = `
+      <div class="av-t">RW</div>
+      <div class="body-t">
+        <div class="from"><span class="nm-t">ReleaseWatch</span><span class="ts-t">01:41 AM</span></div>
+        <div style="background:#2d2d3a;border-radius:6px;padding:12px;border:1px solid #3a3a47;color:#f0f0f0;font-size:12.5px;line-height:1.55">
+          Acknowledged. Cadence relaxed to every 5 minutes. INC0228994 remains open. I'll watch for downstream recovery and notify when sms/email/audit-consumer return to baseline.
+        </div>
+      </div>`;
+    body.appendChild(m3);
+    requestAnimationFrame(()=>m3.classList.add('show'));
+  }, 4000);
+}
+
+/* shared log renderer */
+function renderLog(elemId, lines, speed=260, onDone){
+  const elem = document.getElementById(elemId);
+  elem.innerHTML = '';
+  let delay = 0;
+  lines.forEach((l,i)=>{
+    delay += speed + Math.random()*150;
+    setTimeout(()=>{
+      if(!document.querySelector(`#${elemId}`).closest('.scene').classList.contains('active')) return;
+      const div = document.createElement('div');
+      div.className = 'log-line';
+      div.innerHTML = `<span class="ts">${l.ts}</span><span class="lvl ${l.lvl}">${l.lvl}</span><span class="msg-txt">${l.msg}</span>`;
+      elem.appendChild(div);
+      requestAnimationFrame(()=>div.classList.add('show'));
+      elem.scrollTop = elem.scrollHeight;
+      if(i===lines.length-1 && onDone) onDone();
+    }, delay);
+  });
+}
+
+/* NAV */
+document.querySelectorAll('.sn-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>goScene(parseInt(btn.dataset.scene)));
+});
+document.querySelectorAll('.scene-card').forEach(card=>{
+  card.addEventListener('click',()=>goScene(parseInt(card.dataset.jump)));
+});
+document.getElementById('next').addEventListener('click',()=>goScene(Math.min(currentScene+1, totalScenes-1)));
+document.getElementById('replay').addEventListener('click',()=>playScene(currentScene));
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') goScene(Math.min(currentScene+1, totalScenes-1));
+  else if(e.key==='ArrowLeft') goScene(Math.max(currentScene-1, 0));
+  else if(e.key==='r' || e.key==='R') playScene(currentScene);
+  else if(['0','1','2','3','4','5','6','7'].includes(e.key)) goScene(parseInt(e.key));
+});
+</script>
+</body>
+</html>
