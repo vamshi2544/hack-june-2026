@@ -1,0 +1,807 @@
+<!-- SUPERSEDED-BANNER: SUPERSEDED by deck_v2.html — pre-platform-pivot, old scenario. Do not use. -->
+> ⚠️ **SUPERSEDED by deck_v2.html — pre-platform-pivot, old scenario. Do not use.**
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReleasePilot + ReleaseWatch — From Comment to Confidence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --syf-yellow:#FFCE32;
+  --syf-yellow-deep:#E0B520;
+  --syf-yellow-soft:rgba(255,206,50,.12);
+  --syf-navy:#002856;
+  --syf-navy-deep:#001838;
+  --syf-black:#0a0e14;
+  --bg:#0a0e14;
+  --panel:#131820;
+  --panel2:#1a2230;
+  --panel3:#222b39;
+  --border:#2a3340;
+  --border-bright:#3a4757;
+  --ink:#f0f2f5;
+  --dim:#9da9b8;
+  --faint:#6b7785;
+  --danger:#ff6b6b;
+  --warning:#ffb454;
+  --success:#7fd99b;
+  --pilot:#5b8fc7;
+  --watch:#FFCE32;
+  --font-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--font-sans);height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased}
+.deck{position:relative;width:100vw;height:100vh}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;padding:42px 60px;opacity:0;pointer-events:none;transition:opacity .25s;overflow-y:auto}
+.slide.active{opacity:1;pointer-events:auto}
+@media(max-width:900px){.slide{padding:28px 22px}}
+.slide-inner{max-width:1200px;margin:0 auto;width:100%;flex:1;display:flex;flex-direction:column;justify-content:center}
+
+.tag{font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--syf-yellow);display:inline-flex;align-items:center;gap:10px;margin-bottom:16px}
+.tag::before{content:"";width:24px;height:1px;background:var(--syf-yellow)}
+h1{font-size:clamp(34px,5vw,56px);font-weight:800;line-height:1.05;letter-spacing:-.02em;margin-bottom:20px}
+h2{font-size:clamp(24px,3.4vw,38px);font-weight:700;line-height:1.1;letter-spacing:-.01em;margin-bottom:16px}
+h3{font-size:17px;font-weight:600;margin-bottom:8px}
+p{font-size:14.5px;line-height:1.6;color:var(--dim);max-width:64ch}
+p.big{font-size:17px;color:var(--ink);max-width:60ch}
+.brand-y{color:var(--syf-yellow)}
+.brand-pilot{color:var(--pilot)}
+.brand-watch{color:var(--watch)}
+.dim{color:var(--dim)}
+
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--syf-yellow);width:0%;transition:width .25s;z-index:60}
+.shell{position:fixed;bottom:0;left:0;right:0;height:38px;background:linear-gradient(0deg,rgba(0,0,0,.6),transparent);display:flex;align-items:flex-end;justify-content:space-between;padding:0 20px 7px;z-index:50;pointer-events:none}
+.shell *{pointer-events:auto}
+.brand-mark{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:10px;letter-spacing:.15em;color:var(--faint);text-transform:uppercase}
+.brand-mark .dot{width:8px;height:8px;background:var(--syf-yellow);border-radius:50%}
+.counter{font-family:var(--font-mono);font-size:11px;color:var(--faint);letter-spacing:.1em}
+.nav-btn{position:fixed;top:50%;transform:translateY(-50%);width:42px;height:42px;background:rgba(255,206,50,.08);border:1px solid var(--border);border-radius:50%;color:var(--syf-yellow);font-size:18px;cursor:pointer;z-index:50;display:flex;align-items:center;justify-content:center;transition:.15s}
+.nav-btn:hover{background:var(--syf-yellow-soft);border-color:var(--syf-yellow)}
+.nav-btn.prev{left:12px}
+.nav-btn.next{right:12px}
+.nav-hint{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:10px;color:var(--faint);letter-spacing:.1em;z-index:50}
+
+/* title slide */
+.title-slide{background:radial-gradient(at 75% 25%,rgba(255,206,50,.08),transparent 55%),radial-gradient(at 25% 75%,rgba(0,40,86,.4),transparent 55%)}
+.title-slide h1{font-size:clamp(38px,5.5vw,68px);max-width:18ch}
+.title-slide h1 .underline{position:relative;display:inline-block}
+.title-slide h1 .underline::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:14px;background:var(--syf-yellow);opacity:.3;z-index:-1}
+.title-slide .sub{font-size:18px;color:var(--dim);max-width:52ch;margin-top:12px}
+.dual-line{margin-top:30px;display:flex;gap:30px;flex-wrap:wrap}
+.agent-card{padding:14px 18px;border:1px solid;border-radius:10px;font-size:13px}
+.agent-card.pilot{border-color:rgba(91,143,199,.4);background:rgba(91,143,199,.05)}
+.agent-card.watch{border-color:rgba(255,206,50,.4);background:var(--syf-yellow-soft)}
+.agent-card .lab{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.agent-card.pilot .lab{color:var(--pilot)}
+.agent-card.watch .lab{color:var(--syf-yellow)}
+.agent-card .who{color:var(--ink);font-weight:600;font-size:15px;margin-bottom:2px}
+.agent-card .what{color:var(--dim);font-size:12px}
+.title-byline{margin-top:auto;padding-top:30px;display:flex;justify-content:space-between;align-items:end;color:var(--faint);font-size:12px;font-family:var(--font-mono);letter-spacing:.06em}
+.title-byline b{color:var(--syf-yellow);font-weight:600}
+.title-byline .right{text-align:right}
+
+/* cards */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card.pilot-side{border-color:rgba(91,143,199,.3);background:linear-gradient(180deg,rgba(91,143,199,.04),var(--panel))}
+.card.watch-side{border-color:rgba(255,206,50,.3);background:linear-gradient(180deg,rgba(255,206,50,.04),var(--panel))}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+/* lifecycle timeline */
+.lifecycle{position:relative;margin:20px 0;padding:24px 0}
+.timeline{position:relative;height:3px;background:linear-gradient(90deg,var(--pilot) 0%,var(--pilot) 45%,var(--syf-yellow) 55%,var(--syf-yellow) 100%);border-radius:2px;margin:60px 0 30px}
+.tl-marker{position:absolute;top:-7px;width:16px;height:16px;background:var(--bg);border:3px solid var(--syf-yellow);border-radius:50%;transform:translateX(-50%)}
+.tl-marker.pilot{border-color:var(--pilot)}
+.tl-marker.watch{border-color:var(--syf-yellow)}
+.tl-marker.handoff{background:var(--syf-yellow);border-color:var(--syf-yellow);width:18px;height:18px;top:-8px}
+.tl-label{position:absolute;font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);transform:translateX(-50%);text-align:center;white-space:nowrap}
+.tl-label.above{top:-32px}
+.tl-label.below{top:30px;color:var(--faint);font-size:9.5px}
+.lifecycle-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+
+/* handoff diagram */
+.handoff-vis{margin:18px 0;padding:24px;background:var(--panel);border:1px solid var(--border);border-radius:14px;display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center}
+@media(max-width:900px){.handoff-vis{grid-template-columns:1fr;text-align:center}}
+.ho-box{padding:18px;border-radius:10px;text-align:center}
+.ho-box.pilot{background:rgba(91,143,199,.08);border:1px solid rgba(91,143,199,.3)}
+.ho-box.watch{background:rgba(255,206,50,.06);border:1px solid rgba(255,206,50,.3)}
+.ho-box .agent{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.ho-box.pilot .agent{color:var(--pilot)}
+.ho-box.watch .agent{color:var(--syf-yellow)}
+.ho-box .role{font-weight:700;font-size:15px;color:var(--ink);margin-bottom:4px}
+.ho-box .det{font-size:12px;color:var(--dim);line-height:1.45}
+.ho-arrow{display:flex;flex-direction:column;align-items:center;gap:6px}
+.ho-arrow .line{color:var(--syf-yellow);font-size:24px;line-height:1}
+.ho-arrow .pkg{font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;color:var(--syf-yellow);text-transform:uppercase;background:var(--syf-yellow-soft);padding:3px 8px;border-radius:4px;border:1px solid rgba(255,206,50,.3)}
+
+/* risk packet view */
+.packet{background:var(--syf-black);border:1px solid rgba(255,206,50,.3);border-radius:10px;padding:14px 16px;margin-top:14px;font-family:var(--font-mono);font-size:12px;line-height:1.7;color:var(--dim)}
+.packet .key{color:var(--syf-yellow)}
+.packet .val{color:var(--ink)}
+.packet .comment{color:var(--faint);font-style:italic}
+
+/* escalation diagram */
+.escalation{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+@media(max-width:900px){.escalation{grid-template-columns:1fr}}
+.esc-tier{padding:18px;border-radius:12px;border:1px solid;display:flex;flex-direction:column;gap:8px}
+.esc-tier.l1{background:rgba(127,217,155,.06);border-color:rgba(127,217,155,.3)}
+.esc-tier.l2{background:rgba(255,180,84,.06);border-color:rgba(255,180,84,.3)}
+.esc-tier.l3{background:rgba(255,107,107,.06);border-color:rgba(255,107,107,.4)}
+.esc-tier .badge{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:5px 10px;border-radius:5px;width:fit-content}
+.esc-tier.l1 .badge{background:rgba(127,217,155,.15);color:var(--success);border:1px solid rgba(127,217,155,.4)}
+.esc-tier.l2 .badge{background:rgba(255,180,84,.15);color:var(--warning);border:1px solid rgba(255,180,84,.4)}
+.esc-tier.l3 .badge{background:rgba(255,107,107,.15);color:var(--danger);border:1px solid rgba(255,107,107,.4)}
+.esc-tier .title{font-size:15px;font-weight:700;color:var(--ink)}
+.esc-tier .what{font-size:12.5px;color:var(--dim);line-height:1.5;flex:1}
+.esc-tier .cadence{font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;color:var(--ink);padding:6px 10px;background:var(--syf-black);border-radius:5px;text-transform:uppercase}
+.esc-tier.l1 .cadence{color:var(--success)}
+.esc-tier.l2 .cadence{color:var(--warning)}
+.esc-tier.l3 .cadence{color:var(--danger)}
+
+/* dashboard preview */
+.dashboard-mock{margin-top:14px;background:var(--syf-black);border:1px solid var(--border);border-radius:12px;padding:16px}
+.dash-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.dash-head .title{font-weight:700;font-size:14px}
+.dash-head .meta{font-family:var(--font-mono);font-size:10px;color:var(--faint);letter-spacing:.06em}
+.dash-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:900px){.dash-cols{grid-template-columns:1fr}}
+.dash-col{padding:10px;border-radius:8px;background:var(--panel)}
+.dash-col .colhead{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between}
+.dash-col.green .colhead{color:var(--success)}
+.dash-col.amber .colhead{color:var(--warning)}
+.dash-col.red .colhead{color:var(--danger)}
+.chg-card{padding:8px 10px;border-radius:5px;font-size:11px;margin-bottom:5px;border-left:3px solid;background:var(--panel2)}
+.chg-card .chg-id{font-family:var(--font-mono);font-weight:600;color:var(--ink);font-size:11px}
+.chg-card .chg-app{font-family:var(--font-mono);color:var(--dim);font-size:10px;margin-top:2px}
+.chg-card .chg-state{font-family:var(--font-mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase;margin-top:3px}
+.dash-col.green .chg-card{border-color:var(--success)}
+.dash-col.green .chg-state{color:var(--success)}
+.dash-col.amber .chg-card{border-color:var(--warning)}
+.dash-col.amber .chg-state{color:var(--warning)}
+.dash-col.red .chg-card{border-color:var(--danger)}
+.dash-col.red .chg-state{color:var(--danger)}
+
+/* annotated reasoning trace */
+.trace{margin-top:14px;background:var(--syf-black);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.trace-head{padding:10px 16px;background:var(--syf-yellow-soft);border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:10px;color:var(--syf-yellow);letter-spacing:.1em;text-transform:uppercase}
+.trace-body{padding:14px 18px;font-size:13px;line-height:1.6;color:var(--ink)}
+.trace-body b{color:var(--syf-yellow)}
+.trace-body code{font-family:var(--font-mono);background:var(--panel);padding:1px 5px;border-radius:3px;color:var(--syf-yellow);font-size:11.5px}
+.trace-body .think{color:var(--dim);font-style:italic;border-left:2px solid var(--syf-yellow);padding-left:12px;margin:8px 0;display:block}
+
+/* L3 RCA showcase */
+.rca-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+@media(max-width:900px){.rca-grid{grid-template-columns:1fr}}
+.rca-panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:12.5px;line-height:1.55}
+.rca-panel .ph{font-family:var(--font-mono);font-size:10px;color:var(--syf-yellow);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.rca-panel .body-c{color:var(--dim)}
+.rca-panel .body-c b{color:var(--ink)}
+.rca-panel .body-c code{font-family:var(--font-mono);background:var(--syf-black);padding:1px 5px;border-radius:3px;color:var(--syf-yellow);font-size:11px}
+.confidence{margin-top:10px;padding:10px 14px;background:var(--syf-yellow-soft);border:1px solid rgba(255,206,50,.3);border-radius:6px;display:flex;align-items:center;justify-content:space-between;font-family:var(--font-mono);font-size:11px}
+.confidence .label{color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+.confidence .pct{font-size:22px;font-weight:800;color:var(--syf-yellow);font-family:var(--font-sans)}
+
+/* teams adaptive card */
+.teams-card{margin-top:14px;background:#2d2d3a;border:1px solid #3a3a47;border-radius:8px;padding:16px;max-width:560px;margin:14px auto 0}
+.teams-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #3a3a47}
+.teams-head .ico{width:30px;height:30px;background:var(--syf-yellow);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--syf-black);font-weight:800;font-size:13px}
+.teams-head .info .nm{font-weight:600;font-size:13px;color:#f0f0f0}
+.teams-head .info .ts{font-size:10px;color:#aaa;font-family:var(--font-mono)}
+.teams-card .alert{font-size:11px;color:var(--danger);font-family:var(--font-mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.teams-card .title{font-size:15px;font-weight:600;color:#f0f0f0;margin-bottom:6px}
+.teams-card .meta{font-size:12px;color:#bbb;line-height:1.55;margin-bottom:10px}
+.teams-card .meta b{color:#f0f0f0}
+.teams-card .acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.teams-btn{font-size:11px;padding:7px 12px;border-radius:4px;border:1px solid #555;background:transparent;color:#f0f0f0;cursor:pointer;font-family:var(--font-sans)}
+.teams-btn.primary{background:var(--syf-yellow);color:var(--syf-black);border-color:var(--syf-yellow);font-weight:600}
+
+/* automation vs agent diff */
+.diff{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+@media(max-width:900px){.diff{grid-template-columns:1fr}}
+.diff-side{padding:16px 20px;border-radius:10px;border:1px solid var(--border)}
+.diff-side .lab{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.diff-side.auto{background:rgba(255,107,107,.05)}
+.diff-side.auto .lab{color:var(--danger)}
+.diff-side.agentic{background:rgba(255,206,50,.06)}
+.diff-side.agentic .lab{color:var(--syf-yellow)}
+.diff-side ul{list-style:none;font-size:12.5px;color:var(--dim);line-height:1.5}
+.diff-side li{padding:5px 0}
+.diff-side li::before{content:"› ";color:var(--syf-yellow)}
+.diff-side.auto li::before{color:var(--danger)}
+.diff-side li b{color:var(--ink)}
+
+/* architecture diagram */
+.arch{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+@media(max-width:900px){.arch{grid-template-columns:1fr}}
+.arch-col{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}
+.arch-col .ah{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;color:var(--syf-yellow)}
+.arch-col ul{list-style:none}
+.arch-col li{font-size:12px;color:var(--dim);padding:5px 0;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between}
+.arch-col li:last-child{border-bottom:0}
+.arch-col li b{color:var(--ink);font-weight:500}
+.arch-col li .what{font-family:var(--font-mono);font-size:9.5px;color:var(--faint);letter-spacing:.04em}
+.apigee-row{margin-top:14px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--syf-yellow);letter-spacing:.1em;padding:8px;background:var(--syf-yellow-soft);border-radius:6px;border:1px dashed rgba(255,206,50,.3)}
+
+/* value tiles */
+.value-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+@media(max-width:900px){.value-grid{grid-template-columns:1fr}}
+.vtile{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden}
+.vtile::after{content:"";position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:radial-gradient(circle,var(--syf-yellow-soft),transparent 65%);pointer-events:none}
+.vtile .v{font-size:36px;font-weight:800;color:var(--syf-yellow);letter-spacing:-.02em;line-height:1;margin-bottom:6px}
+.vtile .lab{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;font-family:var(--font-mono);margin-bottom:5px}
+.vtile .det{font-size:12.5px;color:var(--ink);line-height:1.5}
+
+/* phases */
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+@media(max-width:900px){.phases{grid-template-columns:1fr}}
+.phase{padding:16px;border:1px solid var(--border);border-radius:10px}
+.phase .pn{font-family:var(--font-mono);font-size:10px;color:var(--syf-yellow);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.phase .pt{font-weight:600;color:var(--ink);font-size:14px;margin-bottom:6px}
+.phase .pd{font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:8px}
+.phase .pm{font-family:var(--font-mono);font-size:10px;color:var(--syf-yellow);letter-spacing:.04em}
+
+/* the ask */
+.ask{margin-top:22px;padding:24px;border-radius:14px;background:linear-gradient(135deg,var(--syf-yellow-soft),transparent);border:1px solid rgba(255,206,50,.3)}
+.ask h3{color:var(--syf-yellow);font-size:13px;font-family:var(--font-mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+.ask-line{font-size:21px;font-weight:600;line-height:1.35;color:var(--ink);max-width:50ch}
+
+/* closing */
+.closing{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.closing h1{font-size:clamp(36px,5vw,60px);max-width:18ch;margin:0 auto 18px}
+.closing .sub{font-size:17px;color:var(--dim);max-width:54ch;margin:0 auto 28px}
+.closing .signature{font-family:var(--font-mono);font-size:10px;color:var(--faint);letter-spacing:.15em;text-transform:uppercase;margin-top:26px}
+
+/* gap diagram for slide 2 */
+.lifecycle-gap{margin:24px 0;display:grid;grid-template-columns:1fr 70px 1fr 70px 1fr;gap:8px;align-items:center}
+@media(max-width:900px){.lifecycle-gap{grid-template-columns:1fr}}
+.gap-block{padding:14px;border-radius:10px;text-align:center}
+.gap-block.human{background:rgba(91,143,199,.06);border:1px dashed rgba(91,143,199,.4)}
+.gap-block.empty{background:rgba(255,107,107,.06);border:1px dashed rgba(255,107,107,.4);position:relative}
+.gap-block.empty::after{content:"NOBODY OWNS THIS";position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:9px;color:var(--danger);letter-spacing:.08em}
+.gap-block .lbl{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.gap-block.empty .lbl{color:var(--danger)}
+.gap-block .who{font-weight:600;color:var(--ink);font-size:14px}
+.gap-block.empty .who{color:var(--danger)}
+.gap-arrow{color:var(--faint);font-size:18px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="deck" id="deck">
+
+<!-- SLIDE 1 — TITLE -->
+<section class="slide title-slide active">
+  <div class="slide-inner">
+    <div class="tag">VIBE CODING HACKATHON 2026 · JUNE 8-9</div>
+    <h1>From the moment a release is ready, to the moment we're <span class="underline">confident it worked.</span></h1>
+    <p class="sub">An agent that owns the full release lifecycle — paperwork before the deploy, vigilance after. Two phases, one story, zero gaps.</p>
+    <div class="dual-line">
+      <div class="agent-card pilot">
+        <div class="lab">▸ PHASE 1 · BEFORE DEPLOY</div>
+        <div class="who">ReleasePilot</div>
+        <div class="what">Documentation, approvals, risk packet</div>
+      </div>
+      <div class="agent-card watch">
+        <div class="lab">▸ PHASE 2 · AFTER DEPLOY</div>
+        <div class="who">ReleaseWatch</div>
+        <div class="what">Monitor, diagnose, escalate</div>
+      </div>
+    </div>
+    <div class="title-byline">
+      <div>Project · <b>ReleasePilot + ReleaseWatch</b><br>The full release lifecycle, agentic</div>
+      <div class="right">Vamshi Veggalam<br>Sr Technical Lead · Acquisition APIs</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 2 — THE LIFECYCLE TODAY -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="tag">THE PROBLEM</div>
+    <h2>Today, the release lifecycle has two ends and a gap in the middle.</h2>
+    <p class="big" style="margin-bottom:8px">Engineers and release leads work hard before the deploy. On-call works hard if something breaks after. The window in between — the four-to-twenty-four hours where the new code is alive and probationary — is nobody's full-time job.</p>
+    <div class="lifecycle-gap">
+      <div class="gap-block human">
+        <div class="lbl">▸ BEFORE</div>
+        <div class="who">Humans</div>
+      </div>
+      <div class="gap-arrow">→</div>
+      <div class="gap-block empty">
+        <div class="lbl">▸ THE GAP</div>
+        <div class="who">— — —</div>
+      </div>
+      <div class="gap-arrow">→</div>
+      <div class="gap-block human">
+        <div class="lbl">▸ WHEN BROKEN</div>
+        <div class="who">On-call</div>
+      </div>
+    </div>
+    <p style="margin-top:42px"><span class="brand-y">When something breaks silently in that gap</span> — a producer that stopped sending messages but logged no errors, a queue that filled and applied backpressure, a feature flag that quietly changed approval rates — nobody notices until it's caused real damage.</p>
+  </div>
+</section>
+
+<!-- SLIDE 3 — ONE LIFECYCLE, TWO AGENTS -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="tag">THE SOLUTION</div>
+    <h2>One lifecycle. Two agents. <span class="brand-y">From comment to confidence.</span></h2>
+    <div class="lifecycle">
+      <div class="timeline">
+        <div class="tl-marker pilot" style="left:5%"></div>
+        <div class="tl-label above" style="left:5%">@release-pilot go</div>
+        <div class="tl-label below" style="left:5%">human comments on Jira</div>
+
+        <div class="tl-marker pilot" style="left:25%"></div>
+        <div class="tl-label above" style="left:25%">CHG progresses</div>
+        <div class="tl-label below" style="left:25%">approvals, Confluence built</div>
+
+        <div class="tl-marker handoff" style="left:50%"></div>
+        <div class="tl-label above" style="left:50%;color:var(--syf-yellow);font-weight:700">HANDOFF</div>
+        <div class="tl-label below" style="left:50%;color:var(--syf-yellow)">deploy complete</div>
+
+        <div class="tl-marker watch" style="left:70%"></div>
+        <div class="tl-label above" style="left:70%">Watching</div>
+        <div class="tl-label below" style="left:70%">L1 hourly reports</div>
+
+        <div class="tl-marker watch" style="left:95%"></div>
+        <div class="tl-label above" style="left:95%">All clear</div>
+        <div class="tl-label below" style="left:95%">CHG closed, post-release report</div>
+      </div>
+    </div>
+    <div class="lifecycle-cols">
+      <div class="card pilot-side">
+        <h3 class="brand-pilot">▸ ReleasePilot · pre-deploy</h3>
+        <p>Reads Jira release stories, builds the Confluence release page, fills the Excel template, advances the ServiceNow CHG through approvals, and — critically — assembles a <b>risk packet</b> of past INCs and known failure modes for this application.</p>
+      </div>
+      <div class="card watch-side">
+        <h3 class="brand-watch">▸ ReleaseWatch · post-deploy</h3>
+        <p>Wakes when the deploy completes. Watches metrics across <b>Splunk, New Relic, the app and its upstream/downstream dependencies</b>. Compares baselines, reasons about drift, escalates proportionally, and — when something is wrong — diagnoses with bitbucket evidence.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4 — RELEASEPILOT QUICK CONTEXT -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="tag">PHASE 1 · 30 SECONDS</div>
+    <h2>ReleasePilot, briefly. What happens before the deploy.</h2>
+    <p>A human comments <code style="background:var(--panel2);padding:2px 8px;border-radius:4px;color:var(--syf-yellow);font-family:var(--font-mono);font-size:13px">@release-pilot go</code> on a closed Jira story. The agent wakes and works the entire release in parallel.</p>
+    <div class="grid-3" style="margin-top:18px">
+      <div class="card pilot-side">
+        <h3 class="brand-pilot">Read &amp; understand</h3>
+        <p>Reads the Fix Version, finds every release story under it, reads all subtasks, classifies what's in this release.</p>
+      </div>
+      <div class="card pilot-side">
+        <h3 class="brand-pilot">Document &amp; advance</h3>
+        <p>Builds the Confluence release page. Fills the Excel template. Attaches both to the CHG. Advances state through approval gates as humans confirm in Teams.</p>
+      </div>
+      <div class="card pilot-side">
+        <h3 class="brand-pilot">Assess risk</h3>
+        <p>Pulls every past INC on this application from ServiceNow. Identifies common failure modes. <b>Writes a risk packet for ReleaseWatch to read after deploy.</b></p>
+      </div>
+    </div>
+    <p style="margin-top:18px;font-size:13px"><span class="brand-y">The risk packet is the architectural insight.</span> Pilot does the homework; Watch reads it and knows exactly what to look for. The two agents feel like one coordinated system.</p>
+  </div>
+</section>
+
+<!-- SLIDE 5 — THE HANDOFF -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="tag">THE HANDOFF</div>
+    <h2>How the two agents share state — without any shared infrastructure.</h2>
+    <p>No database. No queue. The handoff happens through artifacts both agents can already read.</p>
+    <div class="handoff-vis">
+      <div class="ho-box pilot">
+        <div class="agent">▸ ReleasePilot writes</div>
+        <div class="role">Risk packet</div>
+        <div class="det">Past INCs · failure modes · apps to watch · expected metric shifts</div>
+      </div>
+      <div class="ho-arrow">
+        <span class="pkg">handoff</span>
+        <span class="line">→</span>
+      </div>
+      <div class="ho-box watch">
+        <div class="agent">▸ ReleaseWatch reads</div>
+        <div class="role">Watch profile</div>
+        <div class="det">Knows what to monitor, what's normal, what's expected drift, what's not</div>
+      </div>
+    </div>
+    <div class="packet">
+      <span class="comment"># Risk packet for CHG0049182 · synthesized by ReleasePilot · 2026-06-08 23:14 UTC</span><br>
+      <span class="key">application:</span> <span class="val">"acquisition-decision-orchestrator"</span><br>
+      <span class="key">downstream_apps:</span> <span class="val">["decision-async-consumer", "audit-recorder"]</span> <span class="comment"># from service catalog</span><br>
+      <span class="key">past_incs_last_180d:</span> <span class="val">[INC0214098, INC0218763, INC0223440]</span><br>
+      <span class="key">common_failure_modes:</span> <span class="val">["rabbitmq_backpressure", "thread_pool_exhaustion", "null_pointer_in_enrichment"]</span><br>
+      <span class="key">expected_metric_shifts:</span> <span class="val">"feature toggle 'enrich_v3' enabled — slight latency increase (+15ms) is expected"</span><br>
+      <span class="key">notify_dl:</span> <span class="val">"dl-acquisition-oncall@syf.com"</span><br>
+      <span class="key">teams_channel:</span> <span class="val">"#release-watch-acquisition"</span>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 6 — RELEASEWATCH WAKES -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="tag">PHASE 2 BEGINS</div>
+    <h2>ReleaseWatch wakes the moment production deploy completes.</h2>
+    <p>Two equally-supported trigger paths. The agent doesn't care which fires — same outcome.</p>
+    <div class="grid-2" style="margin-top:18px">
+      <div class="card">
+        <h3>▸ ServiceNow comment trigger</h3>
+        <p>The deployment lead (or the deploy pipeline) adds a comment to the CHG: <code style="background:var(--panel2);padding:1px 6px;border-radius:3px;color:var(--syf-yellow);font-family:var(--font-mono);font-size:12px">Deployed to CDE2</code> or <code style="background:var(--panel2);padding:1px 6px;border-radius:3px;color:var(--syf-yellow);font-family:var(--font-mono);font-size:12px">Deployed to CDE3</code>. ReleaseWatch reads this on its poll, picks up the CHG, loads the risk packet, starts watching.</p>
+      </div>
+      <div class="card">
+        <h3>▸ Pipeline webhook trigger</h3>
+        <p>UDeploy posts a webhook to ReleaseWatch with <code style="background:var(--panel2);padding:1px 6px;border-radius:3px;color:var(--syf-yellow);font-family:var(--font-mono);font-size:12px">{chg, foundation, app}</code>. Deterministic, no parsing ambiguity. <b>The production path.</b></p>
+      </div>
+    </div>
+    <p style="margin-top:22px"><span class="brand-y">Foundation-by-foundation discipline.</span> SYF's rollout is staged — CDE2 at 1am, then if clean, CDE3 the next day. ReleaseWatch watches each foundation independently. Its CDE2 findings become the <b>go/no-go signal</b> for CDE3 progression. A clean CDE2 watch is a credential, not just an absence of alerts.</p>
+  </div>
+</section>
+
+<!-- SLIDE 7 — ESCALATION MODEL -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="tag">THE ESCALATION MODEL</div>
+    <h2>Three levels. Cadence increases as severity rises.</h2>
+    <p>The agent's job isn't to alert. It's to communicate proportionally — quiet when quiet is appropriate, urgent when it isn't.</p>
+    <div class="escalation">
+      <div class="esc-tier l1">
+        <span class="badge">▸ L1 · Watching</span>
+        <div class="title">All clear</div>
+        <div class="what">Default state. Compares current metrics to last week same time, yesterday same time, pre-deploy baseline. Notes expected drift (from risk packet). All within range.</div>
+        <div class="cadence">Hourly all-clear email</div>
+      </div>
+      <div class="esc-tier l2">
+        <span class="badge">▸ L2 · Amber</span>
+        <div class="title">Something is off</div>
+        <div class="what">Pattern detected. Agent reasons about cause. Considers release-notes-expected behavior. If unexplained, surfaces to humans.</div>
+        <div class="cadence">Immediate email + 15-min updates</div>
+      </div>
+      <div class="esc-tier l3">
+        <span class="badge">▸ L3 · Red</span>
+        <div class="title">Issue is real</div>
+        <div class="what">Pattern persists or worsens. Agent searches past INCs, pulls bitbucket diff, generates RCA. Creates ServiceNow INC with consolidated evidence. Posts Adaptive Card to Teams. Every minute matters now.</div>
+        <div class="cadence">INC + Teams + per-minute updates</div>
+      </div>
+    </div>
+    <p style="margin-top:22px"><span class="brand-y">Human override is built-in.</span> Once at L3, an on-call engineer can acknowledge the Teams card and downgrade to L2 — the INC stays open for audit, but the cadence relaxes. Human is now driving. If a related symptom re-appears later, the agent first checks for an active INC and appends to it rather than double-paging.</p>
+  </div>
+</section>
+
+<!-- SLIDE 8 — DASHBOARD (separable) -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="tag">OPTIONAL · THE AGENT'S HUD</div>
+    <h2>A dashboard, but only for what the agent is actively watching.</h2>
+    <p>Not a generic ops dashboard. A focused view of every CHG ReleaseWatch is currently shepherding — color-coded by the agent's own escalation state. One click into a CHG card shows the agent's reasoning trace for that release.</p>
+    <div class="dashboard-mock">
+      <div class="dash-head">
+        <div class="title">ReleaseWatch · Active CHGs</div>
+        <div class="meta">Updated 23 seconds ago · auto-refresh 30s</div>
+      </div>
+      <div class="dash-cols">
+        <div class="dash-col green">
+          <div class="colhead"><span>▸ GREEN · 7</span><span>WATCHING</span></div>
+          <div class="chg-card"><div class="chg-id">CHG0049180</div><div class="chg-app">customer-profile-svc</div><div class="chg-state">L1 · all clear · 4h22m</div></div>
+          <div class="chg-card"><div class="chg-id">CHG0049181</div><div class="chg-app">notification-dispatcher</div><div class="chg-state">L1 · all clear · 6h08m</div></div>
+          <div class="chg-card"><div class="chg-id">CHG0049184</div><div class="chg-app">rewards-calc-engine</div><div class="chg-state">L1 · all clear · 2h44m</div></div>
+        </div>
+        <div class="dash-col amber">
+          <div class="colhead"><span>▸ AMBER · 1</span><span>DRIFT</span></div>
+          <div class="chg-card"><div class="chg-id">CHG0049183</div><div class="chg-app">payment-gateway-router</div><div class="chg-state">L2 · response time drift · 12m</div></div>
+        </div>
+        <div class="dash-col red">
+          <div class="colhead"><span>▸ RED · 1</span><span>INC OPEN</span></div>
+          <div class="chg-card"><div class="chg-id">CHG0049182</div><div class="chg-app">acquisition-decision-orch</div><div class="chg-state">L3 · INC0228994 · RCA attached</div></div>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top:14px;font-size:13px"><span class="brand-y">The point of the dashboard is the agent showing its work</span> — not a static metric view. Each card carries the agent's state, not raw graphs. The graphs live in Splunk and New Relic where they belong.</p>
+  </div>
+</section>
+
+<!-- SLIDE 9 — THE DEMO SCENARIO -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="tag">LIVE DEMO · THE SCENARIO</div>
+    <h2>A real failure mode from our team's experience.</h2>
+    <p>Tonight's deploy: <code style="background:var(--panel2);padding:1px 6px;border-radius:3px;color:var(--syf-yellow);font-family:var(--font-mono);font-size:12px">acquisition-decision-orchestrator</code>. A producer app that sends messages over RabbitMQ to a downstream consumer for async decisioning.</p>
+    <div class="grid-2" style="margin-top:18px">
+      <div class="card">
+        <h3>▸ 1:00 AM CDE3</h3>
+        <p>Deploy completes successfully. All health checks green. ReleaseWatch reads the CHG comment, loads the risk packet, starts watching the producer and its downstream consumer.</p>
+      </div>
+      <div class="card">
+        <h3>▸ The silent failure</h3>
+        <p>The deploy looked clean. But a subtle config change means producer messages get queued slower. Over hours, RabbitMQ memory fills. Backpressure begins. The producer logs nothing. The consumer logs nothing. <b>Both apps look healthy individually.</b> Async decisions just start arriving late.</p>
+      </div>
+    </div>
+    <p style="margin-top:22px"><span class="brand-y">This is the killer scenario.</span> No error logs. No alerts. No single system showing red. The only signal is: "the consumer hasn't processed anything new in 20 minutes." Today, on-call discovers this hours later when downstream consequences accumulate. ReleaseWatch catches it in 8 minutes — because it watches the relationship, not just the systems.</p>
+  </div>
+</section>
+
+<!-- SLIDE 10 — L2 REASONING -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="tag">INSIDE THE AGENT · L2</div>
+    <h2>How ReleaseWatch goes from "metric drift" to "this isn't noise."</h2>
+    <div class="trace">
+      <div class="trace-head">▸ ReleaseWatch · L2 reasoning trace · 02:08 AM</div>
+      <div class="trace-body">
+        Comparing current window to baselines for CHG0049182.<br>
+        <b>Producer (acquisition-decision-orchestrator):</b> message-send rate normal · CPU normal · memory normal · no error logs.<br>
+        <b>Consumer (decision-async-consumer):</b> message-receive rate <code>down 78%</code> vs same time yesterday · message-receive rate <code>down 81%</code> vs same time last week · decision-completion latency <code>up 340%</code>.<br><br>
+
+        <span class="think">Producer looks healthy in isolation. Consumer looks degraded in isolation. The relationship — producer "claims" to be sending, consumer "claims" to be waiting — that's the anomaly. Both apps are part of the same risk packet. Cross-app correlation is exactly what the risk packet anticipated.</span>
+
+        Checking release notes: <code>enrich_v3</code> toggle expects +15ms latency on producer. Consumer-side latency expansion of 340% is <b>not</b> explained by release notes.<br><br>
+
+        <span class="think">No INC active for either app in the last 4 hours. Symptoms are unexplained by intended release behavior. This is amber. Escalate.</span>
+
+        <b>Action:</b> Set CHG0049182 → <span style="color:var(--warning)">AMBER</span>. Email DL <code>dl-acquisition-oncall@syf.com</code>. Begin 15-min update cadence.
+      </div>
+    </div>
+    <p style="margin-top:16px"><span class="brand-y">The reasoning that matters:</span> producer and consumer each look fine alone. The agent is watching the <i>relationship</i>, which is something that exists in the risk packet but not in any single dashboard. That's the cross-system view today's monitoring can't deliver.</p>
+  </div>
+</section>
+
+<!-- SLIDE 11 — L3 RCA (THE MONEY SLIDE) -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="tag">INSIDE THE AGENT · L3 · THE RCA</div>
+    <h2>From "something is wrong" to "here is the cause, with confidence."</h2>
+    <p>L2 has run 30 minutes. Pattern is worsening. Agent escalates to L3 and begins diagnosis.</p>
+    <div class="rca-grid">
+      <div class="rca-panel">
+        <div class="ph">▸ STEP 1 · Past INC search · ServiceNow</div>
+        <div class="body-c">
+          Query: similar symptom pattern on this application family in the last 180 days.<br><br>
+          <b>Match found:</b> <code>INC0218763</code> · 2026-04-12 · "decision-async-consumer · message backlog · root cause: rabbitmq node memory_high_watermark exceeded, backpressure to producers, no application-level logs."<br><br>
+          <b>Match found:</b> <code>INC0223440</code> · 2026-05-29 · same root cause, different application family.<br><br>
+          <span style="color:var(--syf-yellow);font-family:var(--font-mono);font-size:11px">Pattern similarity: HIGH</span>
+        </div>
+      </div>
+      <div class="rca-panel">
+        <div class="ph">▸ STEP 2 · Pull live RabbitMQ metrics · New Relic</div>
+        <div class="body-c">
+          Querying RabbitMQ cluster <code>rmq-acquisition-prod-cde3</code>...<br><br>
+          <b>Node 1:</b> memory <code>92%</code> · <span style="color:var(--danger)">HIGH WATERMARK EXCEEDED</span><br>
+          <b>Node 2:</b> memory <code>88%</code> · approaching watermark<br>
+          <b>Backpressure flag:</b> <code>active</code> · started <code>01:47 AM</code><br>
+          <b>Producer connections:</b> throttled<br><br>
+          <span style="color:var(--syf-yellow);font-family:var(--font-mono);font-size:11px">Live evidence: confirms hypothesis from past INCs</span>
+        </div>
+      </div>
+      <div class="rca-panel">
+        <div class="ph">▸ STEP 3 · Bitbucket diff · last deploy</div>
+        <div class="body-c">
+          Pulled diff: <code>acquisition-decision-orchestrator</code> · commits since last green deploy.<br><br>
+          <b>5 commits.</b> One stands out:<br>
+          <code>+ messageProps.setPersistent(true)</code> in <code>DecisionMessagePublisher.java</code><br><br>
+          <span class="think">Persistent messages take ~3x longer to enqueue and consume more memory than transient. At normal volume this is fine. At post-deploy traffic spike volume, it pushed the cluster past the high watermark. The change is correct for durability but missed a capacity-planning check.</span>
+        </div>
+      </div>
+      <div class="rca-panel">
+        <div class="ph">▸ STEP 4 · Consolidated RCA</div>
+        <div class="body-c">
+          <b>Root cause:</b> Commit <code>a7f3c19</code> enabled persistent RabbitMQ messages in <code>DecisionMessagePublisher</code>. Persistent messaging tripled memory pressure on the cluster. Within 47 minutes of deploy, memory crossed the high watermark and backpressure was applied. Producer was throttled, consumer starved.<br><br>
+          <b>Immediate fix:</b> Either (a) increase RabbitMQ cluster memory · or (b) revert the persistent-message flag pending capacity planning. Option (b) is faster.<br><br>
+          <b>Long-term:</b> Add cluster-capacity check to release readiness for any change to message-durability flags.
+        </div>
+        <div class="confidence">
+          <span class="label">▸ Diagnostic confidence</span>
+          <span class="pct">81%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 12 — HUMAN HANDOFF -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="tag">HUMAN HANDOFF · TEAMS</div>
+    <h2>The agent's job ends where the human's begins.</h2>
+    <p>At L3, an Adaptive Card lands in the team's Teams channel. INC is already created. RCA is already attached. The human has options.</p>
+    <div class="teams-card">
+      <div class="teams-head">
+        <div class="ico">RW</div>
+        <div class="info">
+          <div class="nm">ReleaseWatch</div>
+          <div class="ts">Posted to #release-watch-acquisition · 02:38 AM</div>
+        </div>
+      </div>
+      <div class="alert">▸ L3 · INC CREATED · CONFIDENCE 81%</div>
+      <div class="title">RabbitMQ memory exhaustion suspected for CHG0049182</div>
+      <div class="meta">
+        <b>App:</b> acquisition-decision-orchestrator<br>
+        <b>Deployed:</b> 01:00 AM CDE3<br>
+        <b>Suspect change:</b> <code style="background:#1d1d27;padding:1px 5px;border-radius:3px;color:var(--syf-yellow);font-family:var(--font-mono);font-size:11px">+messageProps.setPersistent(true)</code> in <code style="background:#1d1d27;padding:1px 5px;border-radius:3px;color:var(--syf-yellow);font-family:var(--font-mono);font-size:11px">DecisionMessagePublisher.java</code><br>
+        <b>Live metric:</b> RabbitMQ memory 92% · high watermark exceeded · backpressure active<br>
+        <b>Similar past INCs:</b> INC0218763, INC0223440<br>
+        <b>INC:</b> <a style="color:var(--syf-yellow);text-decoration:none">INC0228994</a> — RCA attached
+      </div>
+      <div class="acts">
+        <button class="teams-btn primary">Acknowledge — I'm on it</button>
+        <button class="teams-btn">Downgrade to L2 (false positive)</button>
+        <button class="teams-btn">Open INC</button>
+      </div>
+    </div>
+    <p style="margin-top:18px"><span class="brand-y">"Acknowledge"</span> tells the agent: human is driving, relax cadence to every 5 minutes for situational awareness. <span class="brand-y">"Downgrade to L2"</span> tells the agent: I disagree with your classification, but the INC stays open as audit. The agent always defers to the human's call.</p>
+  </div>
+</section>
+
+<!-- SLIDE 13 — WHY AI, NOT AUTOMATION -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="tag">DEFENDING THE PITCH</div>
+    <h2>"Isn't this just better alerting?"</h2>
+    <p>The reasonable critique. Here's why it doesn't apply.</p>
+    <div class="diff">
+      <div class="diff-side auto">
+        <div class="lab">▸ Better Alerting (rules engine)</div>
+        <ul>
+          <li>"<b>If</b> rabbitmq.memory > 85% <b>then</b> page on-call."</li>
+          <li>Each alert is independent. A producer alert and a consumer alert are two pages, not one diagnosis.</li>
+          <li>No way to reason about <b>cross-app relationships</b> ("producer fine but consumer starved").</li>
+          <li>No way to reason about <b>release intent</b> ("approval rate dropped because release notes said it would").</li>
+          <li>Cannot search past INCs by symptom similarity — only by exact keyword.</li>
+          <li>Cannot read code diffs. Cannot reason about whether a code change explains a symptom.</li>
+        </ul>
+      </div>
+      <div class="diff-side agentic">
+        <div class="lab">▸ Agent (Copilot Studio reasoning)</div>
+        <ul>
+          <li>Watches <b>relationships</b> the risk packet declared, not just thresholds.</li>
+          <li>Reasons about whether observed drift is <b>explained by release intent</b> in the Confluence notes — and lowers severity if so.</li>
+          <li>Searches past INCs by <b>symptom similarity</b>, not exact match. Finds related failures even with different keywords.</li>
+          <li>Reads bitbucket diff. Reasons about whether the change <b>plausibly causes</b> the observed behavior.</li>
+          <li>Consolidates multiple evidence streams into a single coherent RCA — with confidence.</li>
+          <li>Generalizes. The same agent works for App A and App B; the watch profile differs but the reasoning doesn't.</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:18px"><span class="brand-y">Alerts tell you something happened. The agent tells you what, why, and how confident it is.</span> That's not a rule. That's judgment over context — exactly what humans do in the first 30 minutes of an incident, and exactly what they can be relieved of.</p>
+  </div>
+</section>
+
+<!-- SLIDE 14 — PRODUCTION ARCHITECTURE -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="tag">PRODUCTION ARCHITECTURE</div>
+    <h2>Real SYF stack. Real Apigee. No magic.</h2>
+    <p>Every system the agents touch is something SYF already runs. Every integration follows the sanctioned outbound pattern. Zero new infrastructure asks.</p>
+    <div class="arch">
+      <div class="arch-col">
+        <div class="ah">▸ Pre-deploy sources</div>
+        <ul>
+          <li><b>Jira</b><span class="what">Existing</span></li>
+          <li><b>Confluence</b><span class="what">Existing</span></li>
+          <li><b>ServiceNow</b><span class="what">Existing</span></li>
+          <li><b>Excel templates</b><span class="what">Existing</span></li>
+        </ul>
+      </div>
+      <div class="arch-col" style="border-color:rgba(255,206,50,.3);background:var(--syf-yellow-soft)">
+        <div class="ah">▸ The Agents</div>
+        <ul>
+          <li><b>ReleasePilot</b><span class="what">Copilot Studio</span></li>
+          <li><b>ReleaseWatch</b><span class="what">Copilot Studio</span></li>
+          <li><b>Risk packet</b><span class="what">Confluence + SNOW</span></li>
+          <li><b>Rovo reasoning</b><span class="what">Existing</span></li>
+        </ul>
+      </div>
+      <div class="arch-col">
+        <div class="ah">▸ Post-deploy sources</div>
+        <ul>
+          <li><b>Splunk</b><span class="what">Existing</span></li>
+          <li><b>New Relic</b><span class="what">Existing</span></li>
+          <li><b>Bitbucket</b><span class="what">Existing</span></li>
+          <li><b>Teams + Email</b><span class="what">Existing</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="apigee-row">▸ ALL EXTERNAL CALLS ROUTE THROUGH APIGEE · SANCTIONED OUTBOUND ARCHITECTURE · NO EXCEPTIONS REQUIRED</div>
+    <p style="margin-top:18px;font-size:13px"><span class="brand-y">PCF console logs:</span> already route into Splunk in SYF's deployment model — no separate PCF connector needed. <span class="brand-y">App interdependencies:</span> read from the existing service catalog, the same source the platform team already maintains.</p>
+  </div>
+</section>
+
+<!-- SLIDE 15 — VALUE + PATH TO PILOT -->
+<section class="slide">
+  <div class="slide-inner">
+    <div class="tag">VALUE + PATH</div>
+    <h2>The math, and how we get there.</h2>
+    <div class="value-grid">
+      <div class="vtile">
+        <div class="lab">Pre-deploy toil saved</div>
+        <div class="v">~4h</div>
+        <div class="det">Per release, per release lead. Documentation, Excel, CHG progression, approver coordination. Compounds across hundreds of releases.</div>
+      </div>
+      <div class="vtile">
+        <div class="lab">Post-deploy MTTD reduction</div>
+        <div class="v">≥60%</div>
+        <div class="det">Silent failures caught in minutes, not hours. Cross-system patterns surfaced today's monitoring misses entirely.</div>
+      </div>
+      <div class="vtile">
+        <div class="lab">First-30-min RCA done by agent</div>
+        <div class="v">100%</div>
+        <div class="det">When the on-call engineer wakes up, the suspect change, past similar INCs, and live metric evidence are already in the INC. They start from minute 31.</div>
+      </div>
+    </div>
+    <h3 style="margin-top:30px;color:var(--syf-yellow);font-family:var(--font-mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase">▸ Three-Phase Pilot</h3>
+    <div class="phases">
+      <div class="phase">
+        <div class="pn">▸ Phase 1 · 4-6 weeks</div>
+        <div class="pt">Shadow mode · one app</div>
+        <div class="pd">ReleasePilot drafts release docs and risk packets; humans still own the work. ReleaseWatch watches in parallel, logs what it would have done. Zero production change.</div>
+        <div class="pm">Goal · prove reasoning accuracy</div>
+      </div>
+      <div class="phase">
+        <div class="pn">▸ Phase 2 · 8 weeks</div>
+        <div class="pt">Co-pilot · one team</div>
+        <div class="pd">Pilot delivers releases. Watch escalates to humans (no auto-INC yet). Team can downgrade or confirm. Calibration period.</div>
+        <div class="pm">Goal · trust calibration</div>
+      </div>
+      <div class="phase">
+        <div class="pn">▸ Phase 3 · Q4 2026</div>
+        <div class="pt">Production · acquisition family</div>
+        <div class="pd">Both agents live for all acquisition releases. Auto-INC enabled at L3 with full audit trail. Humans retain override at every level.</div>
+        <div class="pm">Goal · first agentic release lifecycle in prod</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 16 — CLOSING / ASK -->
+<section class="slide closing">
+  <div class="slide-inner">
+    <div class="tag" style="justify-content:center;text-align:center">THE ASK</div>
+    <h1>Let us pilot the full release lifecycle as an agent — and reclaim the gap between deploy and confidence.</h1>
+    <p class="sub">Every release at Synchrony is shepherded by humans on both ends, with a silent gap in the middle where most production incidents are born. We built the agent pair that closes the gap and reasons across it. The architecture is real. The path is sanctioned. The pilot is six weeks away.</p>
+    <div class="ask" style="max-width:680px">
+      <h3>▸ What we need</h3>
+      <div class="ask-line">One application family, one sponsor, six weeks of shadow mode, and a willingness to see what the agents catch before they're trusted to act.</div>
+    </div>
+    <div class="signature">ReleasePilot + ReleaseWatch · Vamshi Veggalam · Acquisition APIs · Vibe Coding Hackathon 2026</div>
+  </div>
+</section>
+
+</div>
+
+<div class="shell">
+  <div class="brand-mark"><span class="dot"></span>ReleasePilot + ReleaseWatch · From Comment to Confidence</div>
+  <div class="counter"><span id="cur">01</span> / <span id="tot">16</span></div>
+</div>
+
+<button class="nav-btn prev" onclick="nav(-1)">‹</button>
+<button class="nav-btn next" onclick="nav(1)">›</button>
+<div class="nav-hint">← → arrow keys · P to print</div>
+
+<script>
+const slides=document.querySelectorAll('.slide');
+const total=slides.length;
+let i=0;
+document.getElementById('tot').textContent=String(total).padStart(2,'0');
+function show(n){slides[i].classList.remove('active');i=(n+total)%total;slides[i].classList.add('active');document.getElementById('cur').textContent=String(i+1).padStart(2,'0');document.getElementById('progress').style.width=((i+1)/total*100)+'%';}
+function nav(d){show(i+d);}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' ')nav(1);
+  else if(e.key==='ArrowLeft')nav(-1);
+  else if(e.key==='Home')show(0);
+  else if(e.key==='End')show(total-1);
+  else if(e.key==='p'||e.key==='P')window.print();
+});
+show(0);
+</script>
+</body>
+</html>
